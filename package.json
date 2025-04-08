@@ -1,0 +1,11 @@
+{
+	"name": "car-league",
+	"version": "1.0.0",
+	"packageManager": "pnpm@10.7.0",
+	"scripts": {
+		"check": " biome check --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4"
+	}
+}

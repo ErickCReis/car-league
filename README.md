@@ -15,6 +15,7 @@ The game features cars that can perform acrobatic maneuvers, boost mechanics, an
 - **React Three Drei**: Collection of useful helpers and abstractions for React Three Fiber
 - **Zustand/Redux**: For state management across the application
 
+
 ### Backend
 - **Cloudflare Durable Objects**: For maintaining game state and handling real-time multiplayer functionality
 - **WebSockets**: For real-time bidirectional communication between clients and server

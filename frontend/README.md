@@ -1,54 +1,41 @@
-# React + TypeScript + Vite
+# Car League
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Introduction
 
-Currently, two official plugins are available:
+Car League is a 3D game inspired by Rocket League, where players control cars to play a soccer-like game with unique physics and mechanics. This project aims to create an engaging multiplayer experience with robust architecture and performance optimization.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The game features cars that can perform acrobatic maneuvers, boost mechanics, and physics-based ball interactions in a competitive arena setting. Our focus is on creating a simple yet engaging gameplay experience with solid technical foundations.
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Core Technologies
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **React**: For building the user interface and game menu components
+- **Three.js**: 3D rendering library for creating the game world, cars, ball, and arena
+- **React Three Fiber**: React renderer for Three.js, making it easier to build Three.js elements with React's component approach
+- **React Three Drei**: Collection of useful helpers and abstractions for React Three Fiber
+- **Zustand/Redux**: For state management across the application
+
+## Project Structure
+
+The project will follow a modular architecture to ensure maintainability and scalability:
+
+```
+car-league/
+├── frontend/           # React + Three.js application
+│   ├── src/
+│   │   ├── components/ # UI components
+│   │   ├── game/       # Game-specific components and logic
+│   │   ├── models/     # 3D models and assets
+│   │   └── state/      # State management
+│   └── public/         # Static assets
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Code guidelines
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- Use TypeScript for type safety
+- Follow the React Hooks best practices
+- Use "export function name() {}" style for function and components
+- do not use barrel index.ts files, use named exports and direct files imports
+- make small files, with a single responsibility
+- use tailwindcss for styling, we are using v4, not nedd for tailwind.config.js
+- shadcn ui is allready installed and ready to use, use it for ui components
