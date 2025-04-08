@@ -17,7 +17,7 @@
 
 ### Game Components
 - [ ] Create basic arena model and environment
-- [ ] Implement car models with basic movement
+- [x] Implement car models with basic movement
 - [ ] Add ball physics and interactions
 - [ ] Implement camera controls and perspectives
 - [ ] Create lighting and visual effects

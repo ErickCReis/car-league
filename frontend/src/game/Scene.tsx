@@ -1,29 +1,29 @@
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Arena } from "./Arena";
-import { Environment } from "./Environment";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense } from "react";
+import { Arena } from "./Arena";
+import { Ball, useBallStore } from "./Ball";
+import { CameraController } from "./CameraController";
+import { Car, useCarStore } from "./Car";
+import { KeyboardControlsWrapper } from "./Controls";
+import { Environment } from "./Environment";
+import { Vector3 } from "three";
 
 export function Scene() {
 	return (
-		<Canvas shadows>
-			<Suspense fallback={null}>
-				{/* Camera setup with initial position */}
-				<PerspectiveCamera
-					makeDefault
-					position={[0, 30, 40]}
-					fov={50}
-				/>
+		<KeyboardControlsWrapper>
+			<Canvas shadows>
+				<Suspense fallback={null}>
+					<CameraController />
 
-				{/* Environment (lighting, sky, etc.) */}
-				<Environment />
+					{/* Environment (lighting, sky, etc.) */}
+					<Environment />
 
-				{/* Game arena */}
-				<Arena />
-
-				{/* Controls for development/debugging */}
-				<OrbitControls target={[0, 0, 0]} maxPolarAngle={Math.PI / 2 - 0.1} />
-			</Suspense>
-		</Canvas>
+					{/* Game arena */}
+					<Arena />
+					<Car />
+					<Ball />
+				</Suspense>
+			</Canvas>
+		</KeyboardControlsWrapper>
 	);
 }
