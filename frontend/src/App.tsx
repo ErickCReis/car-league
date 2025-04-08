@@ -2,10 +2,22 @@ import "./index.css";
 import { Scene } from "./game/Scene";
 import { useGameStore } from "./state/store";
 import { Button } from "./components/ui/button";
+import { MainMenu } from "./components/MainMenu";
 
 export function App() {
-	const { score, boostAmount, incrementScore, resetScore } = useGameStore();
+	const { isPlaying, score, boostAmount, incrementScore, resetScore, setIsPlaying } = useGameStore();
 
+	const handleBackToMenu = () => {
+		setIsPlaying(false);
+		resetScore();
+	};
+
+	// If not playing, show the main menu
+	if (!isPlaying) {
+		return <MainMenu />;
+	}
+
+	// Otherwise, show the game
 	return (
 		<div className="flex flex-col h-screen w-full bg-background text-foreground">
 			<div className="absolute top-0 left-0 right-0 z-10 p-4 flex flex-col gap-4">
@@ -42,6 +54,12 @@ export function App() {
 						onClick={resetScore}
 					>
 						Reset Score
+					</Button>
+					<Button
+						variant="secondary"
+						onClick={handleBackToMenu}
+					>
+						Back to Menu
 					</Button>
 				</div>
 			</div>
