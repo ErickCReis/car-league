@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import type { Group } from "three";
 import { Arena } from "./Arena";
+import { Ball } from "./Ball";
 import { Car } from "./Car";
 import { KeyboardControlsWrapper } from "./Controls";
 import { Environment } from "./Environment";
@@ -23,7 +24,7 @@ export function Scene() {
             {/* Game arena */}
             <Arena />
             <Car ref={carRef} />
-            {/* <Ball /> */}
+            <Ball />
           </PhysicsWorld>
 
           {/* Camera that follows the car */}

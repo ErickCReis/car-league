@@ -118,7 +118,7 @@ export const Car = forwardRef<Group>((_, ref) => {
 
   const maxSteer = 0.5;
   const maxForce = 500;
-  const brakeForce = 50;
+  const brakeForce = 10;
 
   const [, getKeys] = useKeyboardControls();
 

@@ -1,6 +1,6 @@
 import { useBox, usePlane } from "@react-three/cannon";
 import { useRef } from "react";
-import type { Group, Mesh } from "three";
+import type { Group } from "three";
 
 // Arena component that creates the basic game environment
 export function Arena() {
@@ -19,7 +19,7 @@ export function Arena() {
     position: [0, 0, 0],
     material: {
       friction: 0.5, // Increased friction for better car control
-      restitution: 0.2,
+      restitution: 0.5,
     },
   }));
 
@@ -29,7 +29,7 @@ export function Arena() {
     args: [arenaWidth + wallThickness * 2, arenaHeight, wallThickness],
     material: {
       friction: 0,
-      restitution: 0.2,
+      restitution: 0.8,
     },
   }));
 
@@ -38,7 +38,7 @@ export function Arena() {
     args: [arenaWidth + wallThickness * 2, arenaHeight, wallThickness],
     material: {
       friction: 0,
-      restitution: 0.2,
+      restitution: 0.8,
     },
   }));
 
@@ -47,7 +47,7 @@ export function Arena() {
     args: [wallThickness, arenaHeight, arenaLength],
     material: {
       friction: 0,
-      restitution: 0.2,
+      restitution: 0.8,
     },
   }));
 
@@ -56,7 +56,7 @@ export function Arena() {
     args: [wallThickness, arenaHeight, arenaLength],
     material: {
       friction: 0,
-      restitution: 0.2,
+      restitution: 0.8,
     },
   }));
 
@@ -64,7 +64,7 @@ export function Arena() {
     <group>
       {/* Floor/field */}
       <mesh
-        ref={groundRef as React.RefObject<Mesh>}
+        ref={groundRef}
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, 0]}
         receiveShadow
@@ -89,7 +89,7 @@ export function Arena() {
       <group ref={wallsRef}>
         {/* Back wall (blue goal side) */}
         <mesh
-          ref={backWallRef as React.RefObject<Mesh>}
+          ref={backWallRef}
           position={[0, arenaHeight / 2, arenaLength / 2 + wallThickness / 2]}
           castShadow
           receiveShadow
@@ -107,7 +107,7 @@ export function Arena() {
 
         {/* Front wall (orange goal side) */}
         <mesh
-          ref={frontWallRef as React.RefObject<Mesh>}
+          ref={frontWallRef}
           position={[0, arenaHeight / 2, -arenaLength / 2 - wallThickness / 2]}
           castShadow
           receiveShadow
@@ -125,7 +125,7 @@ export function Arena() {
 
         {/* Left wall */}
         <mesh
-          ref={leftWallRef as React.RefObject<Mesh>}
+          ref={leftWallRef}
           position={[-arenaWidth / 2 - wallThickness / 2, arenaHeight / 2, 0]}
           castShadow
           receiveShadow
@@ -141,7 +141,7 @@ export function Arena() {
 
         {/* Right wall */}
         <mesh
-          ref={rightWallRef as React.RefObject<Mesh>}
+          ref={rightWallRef}
           position={[arenaWidth / 2 + wallThickness / 2, arenaHeight / 2, 0]}
           castShadow
           receiveShadow

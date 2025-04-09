@@ -9,7 +9,7 @@ type PhysicsWorldProps = {
 export function PhysicsWorld({ children }: PhysicsWorldProps) {
   return (
     <Physics
-      gravity={[0, -30, 0]} // Stronger gravity for more arcade-like feel
+      gravity={[0, -10, 0]} // Stronger gravity for more arcade-like feel
       defaultContactMaterial={{
         friction: 0.3,
         restitution: 0.5, // Moderate bounciness

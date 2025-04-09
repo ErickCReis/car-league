@@ -21,7 +21,7 @@ export function FollowCamera({ target }: FollowCameraProps) {
   const cameraPosition = useRef(new Vector3(0, 5, 10));
   const cameraTarget = useRef(new Vector3());
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!target.current || !cameraRef.current) return;
 
     // Get the car's position and rotation
