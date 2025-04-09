@@ -42,7 +42,7 @@ export const Wheel = forwardRef<Group>((_, ref) => {
       ],
       type: "Kinematic",
     }),
-    ref
+    ref,
   );
   return (
     <group ref={ref}>
@@ -100,7 +100,7 @@ export const Car = forwardRef<Group>((_, ref) => {
       mass: chassisMass,
       position: [0, 2, 0],
     }),
-    ref
+    ref,
   );
 
   const [vehicleRef, vehicleApi] = useRaycastVehicle<Group>(() => ({

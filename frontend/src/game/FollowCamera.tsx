@@ -36,7 +36,7 @@ export function FollowCamera({ target }: FollowCameraProps) {
     // Extract y rotation from quaternion
     const yRotation = Math.atan2(
       2 * (q.w * q.y + q.x * q.z),
-      1 - 2 * (q.y * q.y + q.z * q.z)
+      1 - 2 * (q.y * q.y + q.z * q.z),
     );
 
     const offsetX = -Math.sin(yRotation) * distance;
@@ -49,7 +49,7 @@ export function FollowCamera({ target }: FollowCameraProps) {
     const desiredPosition = new Vector3(
       v.x + offsetX,
       v.y + height,
-      v.z + offsetZ
+      v.z + offsetZ,
     );
 
     // Smoothly interpolate the camera position
