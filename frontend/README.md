@@ -6,7 +6,6 @@ Car League is a 3D game inspired by Rocket League, where players control cars to
 
 The game features cars that can perform acrobatic maneuvers, boost mechanics, and physics-based ball interactions in a competitive arena setting. Our focus is on creating a simple yet engaging gameplay experience with solid technical foundations.
 
-
 ## Core Technologies
 
 - **React**: For building the user interface and game menu components

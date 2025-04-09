@@ -1,122 +1,163 @@
+import {
+  type WheelInfoOptions,
+  useBox,
+  useCompoundBody,
+  useRaycastVehicle,
+} from "@react-three/cannon";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import { type Group, Vector3 } from "three";
-import { create } from "zustand";
-import { useBallStore } from "./Ball";
+import { forwardRef, useRef } from "react";
+import type { Group } from "three";
 
-type CarState = {
-	position: Vector3;
-	velocity: Vector3;
-	rotation: number;
-	setPosition: (position: Vector3) => void;
-	setVelocity: (velocity: Vector3) => void;
-	setRotation: (rotation: number) => void;
-};
+// Define wheel info properties (can be reused for all wheels)
+const wheelInfo = {
+  radius: 0.5, // Wheel radius
+  directionLocal: [0, -1, 0], // Explicit tuple
+  axleLocal: [1, 0, 0], // Explicit tuple
+  suspensionStiffness: 30,
+  suspensionRestLength: 0.3,
+  frictionSlip: 5, // Adjust for grip
+  dampingRelaxation: 2.3,
+  dampingCompression: 4.4,
+  maxSuspensionForce: 100000,
+  rollInfluence: 0.01,
+  maxSuspensionTravel: 0.3,
+  customSlidingRotationalSpeed: -30,
+  useCustomSlidingRotationalSpeed: true,
+} satisfies WheelInfoOptions;
 
-export const useCarStore = create<CarState>((set) => ({
-	position: new Vector3(0, 0, 0),
-	velocity: new Vector3(0, 0, 0),
-	rotation: 0,
-	setPosition: (position) => set({ position }),
-	setVelocity: (velocity) => set({ velocity }),
-	setRotation: (rotation) => set({ rotation }),
-}));
+// Wheel component for visual representation
+export const Wheel = forwardRef<Group>((_, ref) => {
+  useCompoundBody(
+    () => ({
+      collisionFilterGroup: 0,
+      mass: 1,
+      material: "wheel",
+      shapes: [
+        {
+          args: [wheelInfo.radius, wheelInfo.radius, 0.5, 16],
+          rotation: [0, 0, -Math.PI / 2],
+          type: "Cylinder",
+        },
+      ],
+      type: "Kinematic",
+    }),
+    ref
+  );
+  return (
+    <group ref={ref}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry
+          args={[wheelInfo.radius, wheelInfo.radius, 0.2, 16]}
+        />
+        <meshStandardMaterial color="black" />
+      </mesh>
+    </group>
+  );
+});
 
-export function Car() {
-	const carRef = useRef<Group>(null);
-	const {
-		position,
-		velocity,
-		rotation,
-		setPosition,
-		setVelocity,
-		setRotation,
-	} = useCarStore();
+export const Car = forwardRef<Group>((_, ref) => {
+  const chassisWidth = 2;
+  const chassisHeight = 1;
+  const chassisLength = 4;
+  const chassisMass = 150;
 
-	// Define movement constants
-	const ACCELERATION = 0.05;
-	const MAX_SPEED = 0.5;
-	const FRICTION = 0.9;
-	const TURN_SPEED = 0.05;
+  const wheelPositions = [
+    [
+      -chassisWidth / 2,
+      -chassisHeight / 2 + wheelInfo.radius * 0.5,
+      chassisLength / 2 - 0.8,
+    ],
+    [
+      chassisWidth / 2,
+      -chassisHeight / 2 + wheelInfo.radius * 0.5,
+      chassisLength / 2 - 0.8,
+    ],
+    [
+      -chassisWidth / 2,
+      -chassisHeight / 2 + wheelInfo.radius * 0.5,
+      -chassisLength / 2 + 0.8,
+    ],
+    [
+      chassisWidth / 2,
+      -chassisHeight / 2 + wheelInfo.radius * 0.5,
+      -chassisLength / 2 + 0.8,
+    ],
+  ] as [number, number, number][];
 
-	// Setup keyboard controls
-	const [subscribeKeys, getKeys] = useKeyboardControls();
+  const wheelRefs = [
+    useRef<Group>(null),
+    useRef<Group>(null),
+    useRef<Group>(null),
+    useRef<Group>(null),
+  ];
 
-	useFrame(() => {
-		const { forward, backward, left, right } = getKeys();
+  const [chassisRef, chassisApi] = useBox(
+    () => ({
+      allowSleep: false,
+      angularVelocity: [0, 0.5, 0],
+      args: [chassisWidth, chassisHeight, chassisLength],
+      mass: chassisMass,
+      position: [0, 2, 0],
+    }),
+    ref
+  );
 
-		// Update velocity based on input
-		if (forward) {
-			velocity.z -= Math.cos(rotation) * ACCELERATION;
-			velocity.x -= Math.sin(rotation) * ACCELERATION;
-		}
-		if (backward) {
-			velocity.z += Math.cos(rotation) * ACCELERATION;
-			velocity.x += Math.sin(rotation) * ACCELERATION;
-		}
+  const [vehicleRef, vehicleApi] = useRaycastVehicle<Group>(() => ({
+    chassisBody: chassisRef,
+    wheels: wheelRefs,
+    wheelInfos: wheelPositions.map((pos) => ({
+      ...wheelInfo,
+      chassisConnectionPointLocal: pos,
+      isFrontWheel: pos[2] > 0,
+    })),
+    indexForwardAxis: 2,
+    indexRightAxis: 0,
+    indexUpAxis: 1,
+  }));
 
-		// Apply turning
-		if (left) setRotation(rotation + TURN_SPEED);
-		if (right) setRotation(rotation - TURN_SPEED);
+  const maxSteer = 0.5;
+  const maxForce = 500;
+  const brakeForce = 50;
 
-		// Apply friction
-		velocity.multiplyScalar(FRICTION);
+  const [, getKeys] = useKeyboardControls();
 
-		// Limit speed
-		const speed = velocity.length();
-		if (speed > MAX_SPEED) {
-			velocity.multiplyScalar(MAX_SPEED / speed);
-		}
+  useFrame(() => {
+    const { forward, backward, left, right, brake, reset } = getKeys();
 
-		// Update position
-		position.add(velocity);
-		setPosition(position);
+    const engineForce = forward ? -maxForce : backward ? maxForce : 0;
+    const steeringValue = left ? maxSteer : right ? -maxSteer : 0;
 
-		// Update car mesh
-		if (carRef.current) {
-			carRef.current.position.copy(position);
-			carRef.current.rotation.y = rotation;
-		}
-	});
+    vehicleApi.applyEngineForce(engineForce, 2);
+    vehicleApi.applyEngineForce(engineForce, 3);
 
-	const { position: carPosition } = useCarStore();
-	const {
-		position: ballPosition,
-		velocity: ballVelocity,
-		setVelocity: setBallVelocity,
-	} = useBallStore();
+    vehicleApi.setSteeringValue(steeringValue, 0);
+    vehicleApi.setSteeringValue(steeringValue, 1);
 
-	useFrame(() => {
-		// Calculate distance between car and ball
-		const distance = carPosition.distanceTo(ballPosition);
+    const brakeValue = brake ? brakeForce : 0;
+    vehicleApi.setBrake(brakeValue, 0);
+    vehicleApi.setBrake(brakeValue, 1);
+    vehicleApi.setBrake(brakeValue, 2);
+    vehicleApi.setBrake(brakeValue, 3);
 
-		// Collision detection (assuming car size is 2x1x4 and ball radius is 0.5)
-		if (distance < 2.5) {
-			// Calculate collision direction
-			const direction = new Vector3()
-				.subVectors(ballPosition, carPosition)
-				.normalize();
+    if (reset) {
+      chassisApi.position.set(0, 2, 0);
+      chassisApi.velocity.set(0, 0, 0);
+      chassisApi.angularVelocity.set(0, 0, 0);
+      chassisApi.rotation.set(0, 0, 0);
+    }
+  });
 
-			// Apply force to ball based on collision
-			const force = 0.2;
-			setBallVelocity(
-				new Vector3(
-					direction.x * force,
-					Math.abs(direction.y) * force,
-					direction.z * force,
-				),
-			);
-		}
-	});
-
-	return (
-		<group ref={carRef}>
-			{/* Temporary car mesh - replace with actual car model later */}
-			<mesh>
-				<boxGeometry args={[2, 1, 4]} />
-				<meshStandardMaterial color="blue" />
-			</mesh>
-		</group>
-	);
-}
+  return (
+    <group ref={vehicleRef}>
+      <mesh ref={chassisRef}>
+        <boxGeometry args={[chassisWidth, chassisHeight, chassisLength]} />
+        <meshStandardMaterial color="orange" />
+      </mesh>
+      <Wheel ref={wheelRefs[0]} />
+      <Wheel ref={wheelRefs[1]} />
+      <Wheel ref={wheelRefs[2]} />
+      <Wheel ref={wheelRefs[3]} />
+    </group>
+  );
+});
