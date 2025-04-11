@@ -1,6 +1,4 @@
 import { Hono } from "hono";
-import { validator } from "hono/validator";
-import { HTTPException } from "hono/http-exception";
 
 const app = new Hono<{ Bindings: Env }>();
 

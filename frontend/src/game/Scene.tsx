@@ -1,5 +1,7 @@
 import { Canvas } from "@react-three/fiber";
+import { useSelector } from "@xstate/store/react";
 import { Suspense } from "react";
+import { carStore } from "@/state/car";
 import { Arena } from "./Arena";
 import { Ball } from "./Ball";
 import { Car } from "./Car";
@@ -7,8 +9,6 @@ import { KeyboardControlsWrapper } from "./Controls";
 import { Environment } from "./Environment";
 import { FollowCamera } from "./FollowCamera";
 import { PhysicsWorld } from "./PhysicsWorld";
-import { useSelector } from "@xstate/store/react";
-import { carStore } from "@/state/car";
 
 export function Scene() {
   const others = useSelector(carStore, (state) => state.context.others);

@@ -3,8 +3,8 @@ import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { forwardRef, useEffect, useRef } from "react";
 import type { Group } from "three";
-import { Wheel, wheelInfo } from "./Wheel";
 import { carStore } from "@/state/car";
+import { Wheel, wheelInfo } from "./Wheel";
 
 type CarProps = {
   position: [number, number, number];

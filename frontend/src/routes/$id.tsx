@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ClientToServer, ServerToClient } from "common";
+import { WebSocket as RWS } from "partysocket";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Scene } from "@/game/Scene";
-import { useEffect, useRef, useState } from "react";
-import { WebSocket as RWS } from "partysocket";
-import type { ClientToServer, ServerToClient } from "common";
 import { carStore } from "@/state/car";
 
 export const Route = createFileRoute("/$id")({
