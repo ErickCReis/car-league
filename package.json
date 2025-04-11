@@ -1,11 +1,13 @@
 {
   "name": "car-league",
   "version": "1.0.0",
-  "packageManager": "pnpm@10.7.0",
+  "packageManager": "pnpm@10.8.0",
   "scripts": {
-    "check": " biome check --write ."
+    "check": "biome check --write .",
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4"
+    "@biomejs/biome": "2.0.0-beta.1"
   }
 }

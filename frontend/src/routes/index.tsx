@@ -1,11 +1,12 @@
-import { cn } from "@/lib/utils";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useState } from "react";
-import { useGameStore } from "../state/store";
-import { Button } from "./ui/button";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
-// Background scene for the main menu
+export const Route = createFileRoute("/")({
+  component: Index,
+});
+
 function MenuBackground() {
   return (
     <>
@@ -24,39 +25,17 @@ function MenuBackground() {
   );
 }
 
-type MenuOption = "play" | "settings" | "profile" | "exit";
-
-export function MainMenu() {
-  const { setIsPlaying } = useGameStore();
-  const [_, setSelectedOption] = useState<MenuOption | null>(null);
-  const [hoverOption, setHoverOption] = useState<MenuOption | null>(null);
-
-  const handlePlay = () => {
-    setIsPlaying(true);
-  };
-
-  const handleMenuOption = (option: MenuOption) => {
-    setSelectedOption(option);
-
-    if (option === "play") {
-      handlePlay();
-    }
-    // Other options will be implemented later
-  };
-
+export function Index() {
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* 3D Background */}
       <div className="absolute inset-0 z-0">
         <Canvas>
           <MenuBackground />
         </Canvas>
       </div>
 
-      {/* Overlay with gradient */}
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-background/70 to-background/90 backdrop-blur-sm" />
 
-      {/* Menu Content */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
         <div className="mb-12 text-center">
           <h1 className="text-6xl font-bold tracking-tight text-primary mb-2 animate-fade-in">
@@ -70,15 +49,12 @@ export function MainMenu() {
         <div className="flex flex-col gap-4 w-64 animate-fade-in animation-delay-400">
           <Button
             size="lg"
-            className={cn(
-              "text-lg transition-all duration-300",
-              hoverOption === "play" && "bg-primary/90 scale-105",
-            )}
-            onClick={() => handleMenuOption("play")}
-            onMouseEnter={() => setHoverOption("play")}
-            onMouseLeave={() => setHoverOption(null)}
+            className="text-lg transition-all duration-300 hover:bg-primary/90 hover:scale-105"
+            asChild
           >
-            Play
+            <Link to="/$id" params={{ id: "1" }}>
+              Play
+            </Link>
           </Button>
         </div>
 

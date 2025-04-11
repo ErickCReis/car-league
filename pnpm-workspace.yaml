@@ -1,5 +1,7 @@
 packages:
   - frontend
+  - backend
+  - common
 onlyBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
   - esbuild

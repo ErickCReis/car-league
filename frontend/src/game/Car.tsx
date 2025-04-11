@@ -1,62 +1,17 @@
-import {
-  type WheelInfoOptions,
-  useBox,
-  useCompoundBody,
-  useRaycastVehicle,
-} from "@react-three/cannon";
+import { useBox, useRaycastVehicle } from "@react-three/cannon";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { forwardRef, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import type { Group } from "three";
+import { Wheel, wheelInfo } from "./Wheel";
+import { carStore } from "@/state/car";
 
-// Define wheel info properties (can be reused for all wheels)
-const wheelInfo = {
-  radius: 0.5, // Wheel radius
-  directionLocal: [0, -1, 0], // Explicit tuple
-  axleLocal: [1, 0, 0], // Explicit tuple
-  suspensionStiffness: 30,
-  suspensionRestLength: 0.3,
-  frictionSlip: 5, // Adjust for grip
-  dampingRelaxation: 2.3,
-  dampingCompression: 4.4,
-  maxSuspensionForce: 100000,
-  rollInfluence: 0.01,
-  maxSuspensionTravel: 0.3,
-  customSlidingRotationalSpeed: -30,
-  useCustomSlidingRotationalSpeed: true,
-} satisfies WheelInfoOptions;
+type CarProps = {
+  position: [number, number, number];
+  withControls?: boolean;
+};
 
-// Wheel component for visual representation
-export const Wheel = forwardRef<Group>((_, ref) => {
-  useCompoundBody(
-    () => ({
-      collisionFilterGroup: 0,
-      mass: 1,
-      material: "wheel",
-      shapes: [
-        {
-          args: [wheelInfo.radius, wheelInfo.radius, 0.5, 16],
-          rotation: [0, 0, -Math.PI / 2],
-          type: "Cylinder",
-        },
-      ],
-      type: "Kinematic",
-    }),
-    ref,
-  );
-  return (
-    <group ref={ref}>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry
-          args={[wheelInfo.radius, wheelInfo.radius, 0.2, 16]}
-        />
-        <meshStandardMaterial color="black" />
-      </mesh>
-    </group>
-  );
-});
-
-export const Car = forwardRef<Group>((_, ref) => {
+export const Car = forwardRef<Group, CarProps>((props, ref) => {
   const chassisWidth = 2;
   const chassisHeight = 1;
   const chassisLength = 4;
@@ -98,7 +53,7 @@ export const Car = forwardRef<Group>((_, ref) => {
       angularVelocity: [0, 0.5, 0],
       args: [chassisWidth, chassisHeight, chassisLength],
       mass: chassisMass,
-      position: [0, 2, 0],
+      position: props.position,
     }),
     ref,
   );
@@ -122,7 +77,25 @@ export const Car = forwardRef<Group>((_, ref) => {
 
   const [, getKeys] = useKeyboardControls();
 
+  useEffect(() => {
+    if (!props.withControls) return;
+    carStore.trigger.init({ ref: chassisRef });
+  }, [props.withControls, chassisRef]);
+
+  useEffect(() => {
+    if (!props.withControls) {
+      chassisApi.position.set(...props.position);
+      return;
+    }
+
+    return chassisApi.position.subscribe((pos) => {
+      carStore.trigger.carMove({ newPosition: pos });
+    });
+  }, [chassisApi, props.withControls, props.position]);
+
   useFrame(() => {
+    if (!props.withControls) return;
+
     const { forward, backward, left, right, brake, reset } = getKeys();
 
     const engineForce = forward ? -maxForce : backward ? maxForce : 0;

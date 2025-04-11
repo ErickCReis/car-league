@@ -1,32 +1,25 @@
+import { carStore } from "@/state/car";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { type RefObject, useRef } from "react";
-import {
-  type PerspectiveCamera as Cam,
-  type Group,
-  type Object3DEventMap,
-  Quaternion,
-  Vector3,
-} from "three";
-
-interface FollowCameraProps {
-  target: RefObject<Group<Object3DEventMap> | null>;
-}
+import { useRef } from "react";
+import { type PerspectiveCamera as Cam, Quaternion, Vector3 } from "three";
 
 const v = new Vector3();
 const q = new Quaternion();
 
-export function FollowCamera({ target }: FollowCameraProps) {
+export function FollowCamera() {
   const cameraRef = useRef<Cam>(null);
   const cameraPosition = useRef(new Vector3(0, 5, 10));
   const cameraTarget = useRef(new Vector3());
 
   useFrame((_, delta) => {
-    if (!target.current || !cameraRef.current) return;
+    const target = carStore.getSnapshot().context.ref?.current;
+
+    if (!target || !cameraRef.current) return;
 
     // Get the car's position and rotation
-    target.current.getWorldPosition(v);
-    target.current.getWorldQuaternion(q);
+    target.getWorldPosition(v);
+    target.getWorldQuaternion(q);
 
     // Calculate the desired camera position (behind the car)
     const distance = 10; // Distance behind the car

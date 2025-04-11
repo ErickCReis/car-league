@@ -1,6 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useRef } from "react";
-import type { Group } from "three";
+import { Suspense } from "react";
 import { Arena } from "./Arena";
 import { Ball } from "./Ball";
 import { Car } from "./Car";
@@ -8,9 +7,11 @@ import { KeyboardControlsWrapper } from "./Controls";
 import { Environment } from "./Environment";
 import { FollowCamera } from "./FollowCamera";
 import { PhysicsWorld } from "./PhysicsWorld";
+import { useSelector } from "@xstate/store/react";
+import { carStore } from "@/state/car";
 
 export function Scene() {
-  const carRef = useRef<Group>(null);
+  const others = useSelector(carStore, (state) => state.context.others);
 
   return (
     <KeyboardControlsWrapper>
@@ -23,12 +24,17 @@ export function Scene() {
           <PhysicsWorld>
             {/* Game arena */}
             <Arena />
-            <Car ref={carRef} />
             <Ball />
+
+            <Car withControls position={[0, 2, 0]} />
+
+            {Object.entries(others).map(([id, position]) => (
+              <Car key={id} position={position} />
+            ))}
           </PhysicsWorld>
 
           {/* Camera that follows the car */}
-          <FollowCamera target={carRef} />
+          <FollowCamera />
         </Suspense>
       </Canvas>
     </KeyboardControlsWrapper>
