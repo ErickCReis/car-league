@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "backend",
+  "name": "car-league",
   "main": "src/index.ts",
   "compatibility_date": "2025-04-10",
   "migrations": [
