@@ -1,42 +1,46 @@
 import { Canvas } from "@react-three/fiber";
 import { useSelector } from "@xstate/store/react";
+import { WorldState } from "common";
 import { Suspense } from "react";
 import { carStore } from "@/state/car";
 import { Arena } from "./Arena";
 import { Ball } from "./Ball";
 import { Car } from "./Car";
-import { KeyboardControlsWrapper } from "./Controls";
 import { Environment } from "./Environment";
 import { FollowCamera } from "./FollowCamera";
 import { PhysicsWorld } from "./PhysicsWorld";
 
+const playerId = carStore.getSnapshot().context.id;
+
+const emptyCars = {} as WorldState["cars"];
+
 export function Scene() {
-  const others = useSelector(carStore, (state) => state.context.others);
+  const carsState = useSelector(
+    carStore,
+    (state) => state.context.gameState?.cars || emptyCars,
+  );
 
   return (
-    <KeyboardControlsWrapper>
-      <Canvas>
-        <Suspense fallback={null}>
-          {/* Environment (lighting, sky, etc.) */}
-          <Environment />
+    <Canvas>
+      <Suspense fallback={null}>
+        {/* Environment (lighting, sky, etc.) */}
+        <Environment />
 
-          {/* Physics world */}
-          <PhysicsWorld>
-            {/* Game arena */}
-            <Arena />
-            <Ball />
+        <PhysicsWorld>
+          <Arena />
 
-            <Car withControls position={[0, 2, 0]} />
+          <Ball />
 
-            {Object.entries(others).map(([id, position]) => (
-              <Car key={id} position={position} />
-            ))}
-          </PhysicsWorld>
+          <Car key={playerId} withControls carState={carsState[playerId]} />
 
-          {/* Camera that follows the car */}
-          <FollowCamera />
-        </Suspense>
-      </Canvas>
-    </KeyboardControlsWrapper>
+          {Object.keys(carsState).map((id) =>
+            id !== playerId ? <Car key={id} carState={carsState[id]} /> : null,
+          )}
+        </PhysicsWorld>
+
+        {/* Camera that follows the car */}
+        <FollowCamera />
+      </Suspense>
+    </Canvas>
   );
 }

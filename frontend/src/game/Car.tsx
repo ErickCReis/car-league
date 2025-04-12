@@ -1,44 +1,45 @@
 import { useBox, useRaycastVehicle } from "@react-three/cannon";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { forwardRef, useEffect, useRef } from "react";
+import { WorldState } from "common";
+import { useEffect, useRef } from "react";
 import type { Group } from "three";
 import { carStore } from "@/state/car";
 import { Wheel, wheelInfo } from "./Wheel";
 
-type CarProps = {
-  position: [number, number, number];
+const chassisWidth = 2;
+const chassisHeight = 1;
+const chassisLength = 4;
+const chassisMass = 150;
+
+const wheelPositions = [
+  [
+    -chassisWidth / 2,
+    -chassisHeight / 2 + wheelInfo.radius * 0.5,
+    chassisLength / 2 - 0.8,
+  ],
+  [
+    chassisWidth / 2,
+    -chassisHeight / 2 + wheelInfo.radius * 0.5,
+    chassisLength / 2 - 0.8,
+  ],
+  [
+    -chassisWidth / 2,
+    -chassisHeight / 2 + wheelInfo.radius * 0.5,
+    -chassisLength / 2 + 0.8,
+  ],
+  [
+    chassisWidth / 2,
+    -chassisHeight / 2 + wheelInfo.radius * 0.5,
+    -chassisLength / 2 + 0.8,
+  ],
+] as [number, number, number][];
+
+export function Car(props: {
   withControls?: boolean;
-};
-
-export const Car = forwardRef<Group, CarProps>((props, ref) => {
-  const chassisWidth = 2;
-  const chassisHeight = 1;
-  const chassisLength = 4;
-  const chassisMass = 150;
-
-  const wheelPositions = [
-    [
-      -chassisWidth / 2,
-      -chassisHeight / 2 + wheelInfo.radius * 0.5,
-      chassisLength / 2 - 0.8,
-    ],
-    [
-      chassisWidth / 2,
-      -chassisHeight / 2 + wheelInfo.radius * 0.5,
-      chassisLength / 2 - 0.8,
-    ],
-    [
-      -chassisWidth / 2,
-      -chassisHeight / 2 + wheelInfo.radius * 0.5,
-      -chassisLength / 2 + 0.8,
-    ],
-    [
-      chassisWidth / 2,
-      -chassisHeight / 2 + wheelInfo.radius * 0.5,
-      -chassisLength / 2 + 0.8,
-    ],
-  ] as [number, number, number][];
+  carState: WorldState["cars"][string];
+}) {
+  const carState = props.carState;
 
   const wheelRefs = [
     useRef<Group>(null),
@@ -47,17 +48,17 @@ export const Car = forwardRef<Group, CarProps>((props, ref) => {
     useRef<Group>(null),
   ];
 
-  const [chassisRef, chassisApi] = useBox(
-    () => ({
-      allowSleep: false,
-      angularVelocity: [0, 0.5, 0],
-      args: [chassisWidth, chassisHeight, chassisLength],
-      mass: chassisMass,
-      position: props.position,
-    }),
-    ref,
-  );
+  // Only use physics if not server-controlled
+  const [chassisRef, chassisApi] = useBox(() => ({
+    allowSleep: false,
+    angularVelocity: [0, 0.5, 0],
+    args: [chassisWidth, chassisHeight, chassisLength],
+    mass: chassisMass,
+    position: carState?.position ?? [0, 2, 0],
+    type: props.withControls ? "Dynamic" : "Static", // Make static if server-controlled
+  }));
 
+  // Only create vehicle if not server-controlled
   const [vehicleRef, vehicleApi] = useRaycastVehicle<Group>(() => ({
     chassisBody: chassisRef,
     wheels: wheelRefs,
@@ -77,24 +78,29 @@ export const Car = forwardRef<Group, CarProps>((props, ref) => {
 
   const [, getKeys] = useKeyboardControls();
 
+  // Initialize car in store if this is the controlled car
   useEffect(() => {
     if (!props.withControls) return;
     carStore.trigger.init({ ref: chassisRef });
   }, [props.withControls, chassisRef]);
 
-  useEffect(() => {
-    if (!props.withControls) {
-      chassisApi.position.set(...props.position);
-      return;
+  // Update from server position if provided
+  useFrame(() => {
+    if (carState) {
+      const position = carState.position;
+      chassisApi.position.set(position[0], position[1], position[2]);
+      const quaternion = carState.quaternion;
+      chassisApi.quaternion.set(
+        quaternion[0],
+        quaternion[1],
+        quaternion[2],
+        quaternion[3],
+      );
     }
 
-    return chassisApi.position.subscribe((pos) => {
-      carStore.trigger.carMove({ newPosition: pos });
-    });
-  }, [chassisApi, props.withControls, props.position]);
-
-  useFrame(() => {
-    if (!props.withControls) return;
+    if (!props.withControls) {
+      return;
+    }
 
     const { forward, backward, left, right, brake, reset } = getKeys();
 
@@ -133,4 +139,4 @@ export const Car = forwardRef<Group, CarProps>((props, ref) => {
       <Wheel ref={wheelRefs[3]} />
     </group>
   );
-});
+}

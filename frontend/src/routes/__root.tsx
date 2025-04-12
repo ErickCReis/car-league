@@ -1,5 +1,14 @@
+import { KeyboardControlsWrapper } from "@/game/Controls";
 import "../index.css";
 
-import { createRootRoute } from "@tanstack/react-router";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-export const Route = createRootRoute();
+export const Route = createRootRoute({
+  component: () => {
+    return (
+      <KeyboardControlsWrapper>
+        <Outlet />
+      </KeyboardControlsWrapper>
+    );
+  },
+});

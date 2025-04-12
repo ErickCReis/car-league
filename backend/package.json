@@ -13,7 +13,8 @@
     "wrangler": "^4.10.0"
   },
   "dependencies": {
-    "hono": "^4.7.6",
-    "common": "workspace:*"
+    "cannon-es": "^0.20.0",
+    "common": "workspace:*",
+    "hono": "^4.7.6"
   }
 }
