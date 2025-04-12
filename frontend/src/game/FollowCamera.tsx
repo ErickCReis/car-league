@@ -2,7 +2,7 @@ import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { type PerspectiveCamera as Cam, Quaternion, Vector3 } from "three";
-import { carStore } from "@/state/car";
+import { carStore } from "@/state/game";
 
 const v = new Vector3();
 const q = new Quaternion();
@@ -45,13 +45,8 @@ export function FollowCamera() {
       v.z + offsetZ,
     );
 
-    // Smoothly interpolate the camera position
     cameraPosition.current.lerp(desiredPosition, delta * 2);
-
-    // Update the camera position
     cameraRef.current.position.copy(cameraPosition.current);
-
-    // Make the camera look at the target
     cameraRef.current.lookAt(cameraTarget.current);
   });
 

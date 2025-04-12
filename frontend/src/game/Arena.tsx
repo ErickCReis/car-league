@@ -1,71 +1,29 @@
 import { useBox, usePlane } from "@react-three/cannon";
-import { useRef } from "react";
-import type { Group } from "three";
+import { ARENA, createArenaWallConfigs, createGroundConfig } from "game";
 
-// Arena component that creates the basic game environment
+const {
+  width: arenaWidth,
+  length: arenaLength,
+  height: arenaHeight,
+  wallThickness,
+} = ARENA;
+
+const groundConfig = createGroundConfig();
+const wallConfigs = createArenaWallConfigs();
+
 export function Arena() {
-  // References for potential animation or physics interactions
-  const wallsRef = useRef<Group>(null);
-
-  // Arena dimensions - increased for more space
-  const arenaWidth = 60;
-  const arenaLength = 120;
-  const arenaHeight = 12;
-  const wallThickness = 1;
-
-  // Ground physics - make sure it's large enough and has proper friction
-  const [groundRef] = usePlane(() => ({
-    rotation: [-Math.PI / 2, 0, 0],
-    position: [0, 0, 0],
-    material: {
-      friction: 0.5, // Increased friction for better car control
-      restitution: 0.5,
-    },
-  }));
-
-  // Wall physics
-  const [backWallRef] = useBox(() => ({
-    position: [0, arenaHeight / 2, arenaLength / 2 + wallThickness / 2],
-    args: [arenaWidth + wallThickness * 2, arenaHeight, wallThickness],
-    material: {
-      friction: 0,
-      restitution: 0.8,
-    },
-  }));
-
-  const [frontWallRef] = useBox(() => ({
-    position: [0, arenaHeight / 2, -arenaLength / 2 - wallThickness / 2],
-    args: [arenaWidth + wallThickness * 2, arenaHeight, wallThickness],
-    material: {
-      friction: 0,
-      restitution: 0.8,
-    },
-  }));
-
-  const [leftWallRef] = useBox(() => ({
-    position: [-arenaWidth / 2 - wallThickness / 2, arenaHeight / 2, 0],
-    args: [wallThickness, arenaHeight, arenaLength],
-    material: {
-      friction: 0,
-      restitution: 0.8,
-    },
-  }));
-
-  const [rightWallRef] = useBox(() => ({
-    position: [arenaWidth / 2 + wallThickness / 2, arenaHeight / 2, 0],
-    args: [wallThickness, arenaHeight, arenaLength],
-    material: {
-      friction: 0,
-      restitution: 0.8,
-    },
-  }));
+  const [groundRef] = usePlane(() => groundConfig);
+  const [backWallRef] = useBox(() => wallConfigs.back);
+  const [frontWallRef] = useBox(() => wallConfigs.front);
+  const [leftWallRef] = useBox(() => wallConfigs.left);
+  const [rightWallRef] = useBox(() => wallConfigs.right);
 
   return (
     <group>
-      {/* Floor/field */}
+      {/* Ground */}
       <mesh
         ref={groundRef}
-        rotation={[-Math.PI / 2, 0, 0]}
+        rotation={groundConfig.rotation}
         position={[0, 0, 0]}
         receiveShadow
       >
@@ -80,17 +38,16 @@ export function Arena() {
       </mesh>
 
       {/* Center circle */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+      <mesh rotation={groundConfig.rotation} position={[0, 0.01, 0]}>
         <ringGeometry args={[5, 5.2, 32]} />
         <meshStandardMaterial color="white" />
       </mesh>
 
-      {/* Walls group */}
-      <group ref={wallsRef}>
-        {/* Back wall (blue goal side) */}
+      <group>
+        {/* Back wall */}
         <mesh
           ref={backWallRef}
-          position={[0, arenaHeight / 2, arenaLength / 2 + wallThickness / 2]}
+          position={wallConfigs.back.position}
           castShadow
           receiveShadow
         >
@@ -105,10 +62,10 @@ export function Arena() {
           />
         </mesh>
 
-        {/* Front wall (orange goal side) */}
+        {/* Front wall */}
         <mesh
           ref={frontWallRef}
-          position={[0, arenaHeight / 2, -arenaLength / 2 - wallThickness / 2]}
+          position={wallConfigs.front.position}
           castShadow
           receiveShadow
         >
@@ -126,7 +83,7 @@ export function Arena() {
         {/* Left wall */}
         <mesh
           ref={leftWallRef}
-          position={[-arenaWidth / 2 - wallThickness / 2, arenaHeight / 2, 0]}
+          position={wallConfigs.left.position}
           castShadow
           receiveShadow
         >
@@ -142,7 +99,7 @@ export function Arena() {
         {/* Right wall */}
         <mesh
           ref={rightWallRef}
-          position={[arenaWidth / 2 + wallThickness / 2, arenaHeight / 2, 0]}
+          position={wallConfigs.right.position}
           castShadow
           receiveShadow
         >
@@ -156,13 +113,13 @@ export function Arena() {
         </mesh>
       </group>
 
-      {/* Blue team goal */}
+      {/* Goal 1 */}
       <group position={[0, 0, arenaLength / 2 - 1]}>
         <mesh position={[0, 5, 0]} castShadow>
           <boxGeometry args={[10, 10, 2]} />
           <meshStandardMaterial color="#1a53ff" transparent opacity={0.3} />
         </mesh>
-        {/* Goal posts */}
+
         <mesh position={[-5, 5, 0]} castShadow>
           <cylinderGeometry args={[0.5, 0.5, 10]} />
           <meshStandardMaterial color="#dddddd" />
@@ -177,13 +134,13 @@ export function Arena() {
         </mesh>
       </group>
 
-      {/* Orange team goal */}
+      {/* Goal 2 */}
       <group position={[0, 0, -arenaLength / 2 + 1]}>
         <mesh position={[0, 5, 0]} castShadow>
           <boxGeometry args={[10, 10, 2]} />
           <meshStandardMaterial color="#ff6600" transparent opacity={0.3} />
         </mesh>
-        {/* Goal posts */}
+
         <mesh position={[-5, 5, 0]} castShadow>
           <cylinderGeometry args={[0.5, 0.5, 10]} />
           <meshStandardMaterial color="#dddddd" />

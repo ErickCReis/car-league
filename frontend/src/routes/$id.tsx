@@ -1,98 +1,85 @@
 import { useKeyboardControls } from "@react-three/drei";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ClientToServer, ServerToClient } from "common";
+import type { PlayerControls } from "game";
 import { WebSocket as RWS } from "partysocket";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { KeyboardControlsWrapper } from "@/game/Controls";
 import { Scene } from "@/game/Scene";
-import { carStore } from "@/state/car";
+import { gameState, playerId, playersStore } from "@/state/game";
 
 export const Route = createFileRoute("/$id")({
-  component: RouteComponent,
+  component: () => (
+    <KeyboardControlsWrapper>
+      <RouteComponent />
+    </KeyboardControlsWrapper>
+  ),
 });
-
-const playerId = carStore.getSnapshot().context.id;
 
 function RouteComponent() {
   const { id: gameId } = Route.useParams();
 
-  // Get keyboard controls
   const [, getKeys] = useKeyboardControls();
 
   const ws = useRef<RWS>(null);
-  const controlsInterval = useRef<number | null>(null);
+  const controlsInterval = useRef<Timer | null>(null);
 
   useEffect(() => {
-    // Connect to WebSocket
     ws.current = new RWS(
       import.meta.env.VITE_API_URL.replace("http", "ws") + "/ws/" + gameId,
     );
 
-    // Handle incoming messages
     ws.current.addEventListener("message", (event) => {
       const msg = JSON.parse(event.data) as ServerToClient;
 
       switch (msg.type) {
-        // Handle new message types
-        case "gameCreated":
-          console.log(`Game created: ${msg.gameId}`);
-          break;
-
         case "playerJoined":
           console.log(`Player joined: ${msg.playerId}`);
+          playersStore.trigger.addPlayer({ player: msg.playerId });
           break;
 
         case "playerLeft":
           console.log(`Player left: ${msg.playerId}`);
+          playersStore.trigger.removePlayer({ player: msg.playerId });
+          break;
+
+        case "playersList":
+          console.log(`Players list: ${msg.players}`);
+
+          playersStore.trigger.init({ players: msg.players });
           break;
 
         case "physicsUpdate":
-          carStore.trigger.syncGameState({ gameState: msg.gameState });
+          gameState.ball = msg.gameState.ball;
+          gameState.cars = msg.gameState.cars;
           break;
       }
     });
 
-    // Send join game message when component mounts
-    const joinMsg = {
-      type: "joinGame",
-      playerId: playerId,
-    } satisfies ClientToServer;
-
     ws.current.addEventListener("open", () => {
+      const joinMsg = {
+        type: "joinGame",
+        playerId,
+      } satisfies ClientToServer;
+
       ws.current?.send(JSON.stringify(joinMsg));
     });
 
-    if (ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(joinMsg));
-    }
-
-    // Set up interval to send control updates
     controlsInterval.current = setInterval(() => {
       if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
-      // Get current keyboard state
-      const { forward, backward, left, right, brake, reset } = getKeys();
-
-      // Send controls update
+      const controls = getKeys() as PlayerControls;
       const controlsMsg = {
         type: "controlsUpdate",
         playerId: playerId,
-        controls: {
-          forward,
-          backward,
-          left,
-          right,
-          brake,
-          reset,
-        },
+        controls,
       } satisfies ClientToServer;
 
       ws.current.send(JSON.stringify(controlsMsg));
-    }, 1000 / 30) as unknown as number; // 30 updates per second
+    }, 1000 / 30);
 
-    // Cleanup function
     return () => {
-      // Send leave game message
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         const leaveMsg = {
           type: "leaveGame",
@@ -101,7 +88,6 @@ function RouteComponent() {
         ws.current.send(JSON.stringify(leaveMsg));
       }
 
-      // Clear interval and close connection
       if (controlsInterval.current !== null) {
         clearInterval(controlsInterval.current);
       }

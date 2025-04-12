@@ -1,54 +1,31 @@
 import * as CANNON from "cannon-es";
+import type { WorldState } from "common";
+import type { PlayerControls } from "game";
+import {
+  BALL,
+  CAR,
+  CHASSIS,
+  calculateBrakeValue,
+  calculateEngineForce,
+  calculateSteeringValue,
+  createArenaWallConfigs,
+  createBallConfig,
+  createGroundConfig,
+  createWheelConfigs,
+  WORLD,
+} from "game";
 
-// Wheel options - matching the frontend wheelInfo
-const wheelOptions = {
-  radius: 0.5,
-  directionLocal: new CANNON.Vec3(0, -1, 0),
-  suspensionStiffness: 30,
-  suspensionRestLength: 0.3,
-  frictionSlip: 5,
-  dampingRelaxation: 2.3,
-  dampingCompression: 4.4,
-  maxSuspensionForce: 100000,
-  rollInfluence: 0.01,
-  axleLocal: new CANNON.Vec3(1, 0, 0),
-  chassisConnectionPointLocal: new CANNON.Vec3(0, 0, 0),
-  maxSuspensionTravel: 0.3,
-  customSlidingRotationalSpeed: -30,
-  useCustomSlidingRotationalSpeed: true,
-  // isFrontWheel will be set per wheel when creating the vehicle
-};
+const wheelConfigs = createWheelConfigs().map((config) => ({
+  ...config,
+  directionLocal: new CANNON.Vec3(...config.directionLocal),
+  axleLocal: new CANNON.Vec3(...config.axleLocal),
+  chassisConnectionPointLocal: new CANNON.Vec3(
+    ...config.chassisConnectionPointLocal,
+  ),
+}));
 
-const chassisWidth = 2;
-const chassisHeight = 1;
-const chassisLength = 4;
-const chassisMass = 150;
+const wheelOptions = wheelConfigs[0];
 
-// Wheel positions
-const wheelPositions = [
-  [
-    -chassisWidth / 2,
-    -chassisHeight / 2 + wheelOptions.radius * 0.5,
-    chassisLength / 2 - 0.8,
-  ],
-  [
-    chassisWidth / 2,
-    -chassisHeight / 2 + wheelOptions.radius * 0.5,
-    chassisLength / 2 - 0.8,
-  ],
-  [
-    -chassisWidth / 2,
-    -chassisHeight / 2 + wheelOptions.radius * 0.5,
-    -chassisLength / 2 + 0.8,
-  ],
-  [
-    chassisWidth / 2,
-    -chassisHeight / 2 + wheelOptions.radius * 0.5,
-    -chassisLength / 2 + 0.8,
-  ],
-];
-
-// This class manages the physics world on the server side
 export class PhysicsWorld {
   private world: CANNON.World;
   private cars: Map<
@@ -65,157 +42,84 @@ export class PhysicsWorld {
   };
 
   constructor() {
-    // Initialize the physics world
-    this.world = new CANNON.World();
-    this.world.gravity.set(0, -10, 0);
-    this.world.defaultContactMaterial.friction = 0.3;
-    this.world.defaultContactMaterial.restitution = 0.5;
-    this.world.allowSleep = true;
+    this.world = new CANNON.World({
+      allowSleep: WORLD.allowSleep,
+      gravity: new CANNON.Vec3(...WORLD.gravity),
+    });
+    this.world.defaultContactMaterial.friction =
+      WORLD.defaultContactMaterial.friction;
+    this.world.defaultContactMaterial.restitution =
+      WORLD.defaultContactMaterial.restitution;
 
-    // Initialize collections
     this.cars = new Map();
 
-    // Create the arena
     this.arena = this.createArena();
 
-    // Create the ball
     this.ball = this.createBall();
   }
 
-  // Step the physics simulation forward
   update(deltaTime: number): void {
     this.world.step(1 / 60, deltaTime, 10);
   }
 
-  // Create the arena with walls and ground
   private createArena() {
-    const arenaWidth = 60;
-    const arenaLength = 120;
-    const arenaHeight = 12;
-    const wallThickness = 1;
-
-    // Ground
+    const groundConfig = createGroundConfig();
     const groundShape = new CANNON.Plane();
     const ground = new CANNON.Body({
-      mass: 0, // static body
+      mass: 0,
       material: new CANNON.Material({
-        friction: 0.5,
-        restitution: 0.5,
+        friction: groundConfig.material.friction,
+        restitution: groundConfig.material.restitution,
       }),
     });
     ground.addShape(groundShape);
-    ground.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-    ground.position.set(0, 0, 0);
+    ground.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(1, 0, 0),
+      groundConfig.rotation[0],
+    );
+    ground.position.set(...groundConfig.position);
     this.world.addBody(ground);
 
-    // Walls
+    // Create walls using shared wall configs
     const walls: CANNON.Body[] = [];
+    const wallConfigs = createArenaWallConfigs();
 
-    // Back wall
-    const backWall = new CANNON.Body({
-      mass: 0,
-      material: new CANNON.Material({
-        friction: 0,
-        restitution: 0.8,
-      }),
-    });
-    backWall.addShape(
-      new CANNON.Box(
-        new CANNON.Vec3(
-          (arenaWidth + wallThickness * 2) / 2,
-          arenaHeight / 2,
-          wallThickness / 2,
+    // Create each wall from the shared configs
+    Object.values(wallConfigs).forEach((wallConfig) => {
+      const wall = new CANNON.Body({
+        mass: 0,
+        material: new CANNON.Material({
+          friction: wallConfig.material.friction,
+          restitution: wallConfig.material.restitution,
+        }),
+      });
+
+      wall.addShape(
+        new CANNON.Box(
+          new CANNON.Vec3(
+            wallConfig.dimensions[0] / 2,
+            wallConfig.dimensions[1] / 2,
+            wallConfig.dimensions[2] / 2,
+          ),
         ),
-      ),
-    );
-    backWall.position.set(
-      0,
-      arenaHeight / 2,
-      arenaLength / 2 + wallThickness / 2,
-    );
-    this.world.addBody(backWall);
-    walls.push(backWall);
+      );
 
-    // Front wall
-    const frontWall = new CANNON.Body({
-      mass: 0,
-      material: new CANNON.Material({
-        friction: 0,
-        restitution: 0.8,
-      }),
+      wall.position.set(...wallConfig.position);
+      this.world.addBody(wall);
+      walls.push(wall);
     });
-    frontWall.addShape(
-      new CANNON.Box(
-        new CANNON.Vec3(
-          (arenaWidth + wallThickness * 2) / 2,
-          arenaHeight / 2,
-          wallThickness / 2,
-        ),
-      ),
-    );
-    frontWall.position.set(
-      0,
-      arenaHeight / 2,
-      -arenaLength / 2 - wallThickness / 2,
-    );
-    this.world.addBody(frontWall);
-    walls.push(frontWall);
-
-    // Left wall
-    const leftWall = new CANNON.Body({
-      mass: 0,
-      material: new CANNON.Material({
-        friction: 0,
-        restitution: 0.8,
-      }),
-    });
-    leftWall.addShape(
-      new CANNON.Box(
-        new CANNON.Vec3(wallThickness / 2, arenaHeight / 2, arenaLength / 2),
-      ),
-    );
-    leftWall.position.set(
-      -arenaWidth / 2 - wallThickness / 2,
-      arenaHeight / 2,
-      0,
-    );
-    this.world.addBody(leftWall);
-    walls.push(leftWall);
-
-    // Right wall
-    const rightWall = new CANNON.Body({
-      mass: 0,
-      material: new CANNON.Material({
-        friction: 0,
-        restitution: 0.8,
-      }),
-    });
-    rightWall.addShape(
-      new CANNON.Box(
-        new CANNON.Vec3(wallThickness / 2, arenaHeight / 2, arenaLength / 2),
-      ),
-    );
-    rightWall.position.set(
-      arenaWidth / 2 + wallThickness / 2,
-      arenaHeight / 2,
-      0,
-    );
-    this.world.addBody(rightWall);
-    walls.push(rightWall);
 
     return { ground, walls };
   }
 
-  // Create the ball
+  // Create the ball using shared ball configuration
   private createBall() {
+    const ballConfig = createBallConfig();
     const ball = new CANNON.Body({
-      mass: 2,
-      material: new CANNON.Material({
-        friction: 0.5,
-        restitution: 0.7,
-      }),
-      shape: new CANNON.Sphere(2),
-      position: new CANNON.Vec3(0, 5, 0),
+      mass: ballConfig.mass,
+      material: new CANNON.Material(BALL.material),
+      shape: new CANNON.Sphere(BALL.radius),
+      position: new CANNON.Vec3(...ballConfig.position),
       allowSleep: false,
     });
 
@@ -227,10 +131,14 @@ export class PhysicsWorld {
   createCar(id: string, position: [number, number, number] = [0, 2, 0]) {
     // Create the chassis body
     const chassisShape = new CANNON.Box(
-      new CANNON.Vec3(chassisWidth / 2, chassisHeight / 2, chassisLength / 2),
+      new CANNON.Vec3(
+        CHASSIS.width / 2,
+        CHASSIS.height / 2,
+        CHASSIS.length / 2,
+      ),
     );
     const chassisBody = new CANNON.Body({
-      mass: chassisMass,
+      mass: CHASSIS.mass,
       material: new CANNON.Material(),
       position: new CANNON.Vec3(...position),
       allowSleep: false,
@@ -248,7 +156,7 @@ export class PhysicsWorld {
 
     // Add wheels to the vehicle
     for (let i = 0; i < 4; i++) {
-      const [x, y, z] = wheelPositions[i];
+      const [x, y, z] = CAR.wheelPositions[i];
       const isFrontWheel = i < 2; // First two wheels are front wheels
 
       // Create wheel options for this wheel
@@ -286,40 +194,16 @@ export class PhysicsWorld {
   }
 
   // Apply controls to a car using RaycastVehicle API
-  applyCarControls(
-    id: string,
-    controls: {
-      forward: boolean;
-      backward: boolean;
-      left: boolean;
-      right: boolean;
-      brake: boolean;
-      reset: boolean;
-    },
-  ) {
+  applyCarControls(id: string, controls: PlayerControls) {
     const car = this.cars.get(id);
     if (!car) return;
 
     const { vehicle, chassisBody } = car;
 
-    // Constants for controls - matching frontend values
-    const maxSteer = 0.5;
-    const maxForce = 500;
-    const brakeForce = 10;
-
-    // Apply engine force
-    const engineForce = controls.forward
-      ? -maxForce
-      : controls.backward
-        ? maxForce
-        : 0;
-
-    // Apply steering
-    const steeringValue = controls.left
-      ? maxSteer
-      : controls.right
-        ? -maxSteer
-        : 0;
+    // Use shared utility functions to calculate values
+    const engineForce = calculateEngineForce(controls);
+    const steeringValue = calculateSteeringValue(controls);
+    const brakeValue = calculateBrakeValue(controls);
 
     // Apply engine force to back wheels (2 and 3)
     vehicle.applyEngineForce(engineForce, 2);
@@ -330,7 +214,6 @@ export class PhysicsWorld {
     vehicle.setSteeringValue(steeringValue, 1);
 
     // Apply brakes to all wheels
-    const brakeValue = controls.brake ? brakeForce : 0;
     for (let i = 0; i < 4; i++) {
       vehicle.setBrake(brakeValue, i);
     }
@@ -341,13 +224,11 @@ export class PhysicsWorld {
       chassisBody.velocity.set(0, 0, 0);
       chassisBody.angularVelocity.set(0, 0, 0);
       chassisBody.quaternion.set(0, 0, 0, 1);
-
-      // The vehicle will automatically update wheel positions in the next step
     }
   }
 
   // Get the current state of all objects for sending to clients
-  getWorldState() {
+  getWorldState(): WorldState {
     const carStates: Record<
       string,
       {

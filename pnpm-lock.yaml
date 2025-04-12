@@ -20,6 +20,9 @@ importers:
       common:
         specifier: workspace:*
         version: link:../common
+      game:
+        specifier: workspace:*
+        version: link:../game
       hono:
         specifier: ^4.7.6
         version: 4.7.6
@@ -72,6 +75,9 @@ importers:
       common:
         specifier: workspace:*
         version: link:../common
+      game:
+        specifier: workspace:*
+        version: link:../game
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.0)
@@ -145,6 +151,12 @@ importers:
       vite:
         specifier: ^6.2.0
         version: 6.2.5(@types/node@22.14.0)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)
+
+  game:
+    dependencies:
+      cannon-es:
+        specifier: ^0.20.0
+        version: 0.20.0
 
 packages:
 

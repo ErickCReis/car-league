@@ -20,6 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "common": "workspace:*",
+    "game": "workspace:*",
     "lucide-react": "^0.487.0",
     "partysocket": "^1.1.3",
     "react": "^19.0.0",

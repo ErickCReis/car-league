@@ -1,27 +1,13 @@
 import { useSphere } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
-import { useSelector } from "@xstate/store/react";
-import { carStore } from "@/state/car";
+import { BALL, createBallConfig } from "game";
+import { gameState } from "@/state/game";
 
 export function Ball() {
-  const ballState = useSelector(
-    carStore,
-    (state) => state.context.gameState?.ball,
-  );
+  const [ballRef, ballApi] = useSphere(() => createBallConfig());
 
-  const [ballRef, ballApi] = useSphere(() => ({
-    mass: 2,
-    position: [0, 5, 0],
-    args: [2], // radius
-    material: {
-      friction: 0.5,
-      restitution: 0.7, // bounciness
-    },
-    type: "Dynamic",
-  }));
-
-  // Update position from server
   useFrame(() => {
+    const ballState = gameState?.ball;
     if (!ballState) return;
 
     const position = ballState.position;
@@ -38,7 +24,7 @@ export function Ball() {
 
   return (
     <mesh ref={ballRef} castShadow receiveShadow>
-      <sphereGeometry args={[2, 32, 32]} />
+      <sphereGeometry args={[BALL.radius, 32, 32]} />
       <meshStandardMaterial color="gray" />
     </mesh>
   );

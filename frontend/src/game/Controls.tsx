@@ -1,23 +1,14 @@
 import { KeyboardControls } from "@react-three/drei";
-
-export enum Controls {
-  forward = "forward",
-  backward = "backward",
-  left = "left",
-  right = "right",
-  brake = "brake",
-  reset = "reset",
-  jump = "jump",
-}
+import { CONTROLS } from "game";
 
 export const keyboardMap = [
-  { name: Controls.forward, keys: ["ArrowUp", "KeyW"] },
-  { name: Controls.backward, keys: ["ArrowDown", "KeyS"] },
-  { name: Controls.left, keys: ["ArrowLeft", "KeyA"] },
-  { name: Controls.right, keys: ["ArrowRight", "KeyD"] },
-  { name: Controls.brake, keys: ["Space"] },
-  { name: Controls.reset, keys: ["Backspace"] },
-  { name: Controls.jump, keys: ["KeyJ"] },
+  { name: CONTROLS.forward, keys: ["ArrowUp", "KeyW"] },
+  { name: CONTROLS.backward, keys: ["ArrowDown", "KeyS"] },
+  { name: CONTROLS.left, keys: ["ArrowLeft", "KeyA"] },
+  { name: CONTROLS.right, keys: ["ArrowRight", "KeyD"] },
+  { name: CONTROLS.brake, keys: ["Space"] },
+  { name: CONTROLS.reset, keys: ["Backspace"] },
+  { name: CONTROLS.jump, keys: ["KeyJ"] },
 ];
 
 export function KeyboardControlsWrapper({

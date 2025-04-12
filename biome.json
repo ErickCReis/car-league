@@ -1,41 +1,31 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0-beta.1/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git" },
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/dist",
-      "!**/routeTree.gen.ts",
-      "!**/worker-configuration.d.ts"
-    ]
+    "includes": ["**", "!**/routeTree.gen.ts", "!**/worker-configuration.d.ts"]
   },
-  "formatter": { "enabled": true, "indentStyle": "space" },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
+  "formatter": { "indentStyle": "space" },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error"
+      },
+      "style": {
+        "useConst": "error",
+        "useImportType": "error",
+        "useNodejsImportProtocol": "error"
       }
     }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "a11y": {
-        "useButtonType": "off"
-      }
-    },
-    "includes": ["**"]
   },
   "json": {
-    "parser": {
-      "allowComments": true,
-      "allowTrailingCommas": true
-    }
+    "formatter": { "enabled": true }
   },
   "html": {
-    "formatter": {
-      "enabled": true
-    }
+    "formatter": { "enabled": true }
+  },
+  "assist": {
+    "actions": { "source": { "recommended": true } }
   }
 }

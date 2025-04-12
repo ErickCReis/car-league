@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Player controls schema
 const controlsSchema = z.object({
   forward: z.boolean(),
   backward: z.boolean(),
@@ -8,17 +7,15 @@ const controlsSchema = z.object({
   right: z.boolean(),
   brake: z.boolean(),
   reset: z.boolean(),
+  jump: z.boolean(),
 });
 
-// Client to server messages
 export const clientToServerSchema = z.discriminatedUnion("type", [
-  // Legacy message - will be deprecated
   z.object({
     type: z.literal("updatePosition"),
     id: z.string(),
     position: z.tuple([z.number(), z.number(), z.number()]),
   }),
-  // New messages for server-side physics
   z.object({
     type: z.literal("joinGame"),
     playerId: z.string(),
@@ -50,11 +47,10 @@ export interface WorldState {
   >;
 }
 
-// Server to client messages
 export type ServerToClient =
   | {
-      type: "gameCreated";
-      gameId: string;
+      type: "playersList";
+      players: string[];
     }
   | {
       type: "playerJoined";

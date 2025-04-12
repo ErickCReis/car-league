@@ -1,46 +1,20 @@
 import { useBox, useRaycastVehicle } from "@react-three/cannon";
 import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { WorldState } from "common";
+import {
+  CHASSIS,
+  calculateBrakeValue,
+  calculateEngineForce,
+  calculateSteeringValue,
+  createWheelConfigs,
+  type PlayerControls,
+} from "game";
 import { useEffect, useRef } from "react";
 import type { Group } from "three";
-import { carStore } from "@/state/car";
-import { Wheel, wheelInfo } from "./Wheel";
+import { carStore, gameState } from "@/state/game";
+import { Wheel } from "./Wheel";
 
-const chassisWidth = 2;
-const chassisHeight = 1;
-const chassisLength = 4;
-const chassisMass = 150;
-
-const wheelPositions = [
-  [
-    -chassisWidth / 2,
-    -chassisHeight / 2 + wheelInfo.radius * 0.5,
-    chassisLength / 2 - 0.8,
-  ],
-  [
-    chassisWidth / 2,
-    -chassisHeight / 2 + wheelInfo.radius * 0.5,
-    chassisLength / 2 - 0.8,
-  ],
-  [
-    -chassisWidth / 2,
-    -chassisHeight / 2 + wheelInfo.radius * 0.5,
-    -chassisLength / 2 + 0.8,
-  ],
-  [
-    chassisWidth / 2,
-    -chassisHeight / 2 + wheelInfo.radius * 0.5,
-    -chassisLength / 2 + 0.8,
-  ],
-] as [number, number, number][];
-
-export function Car(props: {
-  withControls?: boolean;
-  carState: WorldState["cars"][string];
-}) {
-  const carState = props.carState;
-
+export function Car(props: { id: string; withControls?: boolean }) {
   const wheelRefs = [
     useRef<Group>(null),
     useRef<Group>(null),
@@ -48,44 +22,33 @@ export function Car(props: {
     useRef<Group>(null),
   ];
 
-  // Only use physics if not server-controlled
   const [chassisRef, chassisApi] = useBox(() => ({
     allowSleep: false,
     angularVelocity: [0, 0.5, 0],
-    args: [chassisWidth, chassisHeight, chassisLength],
-    mass: chassisMass,
-    position: carState?.position ?? [0, 2, 0],
-    type: props.withControls ? "Dynamic" : "Static", // Make static if server-controlled
+    args: [CHASSIS.width, CHASSIS.height, CHASSIS.length],
+    mass: CHASSIS.mass,
+    position: gameState.cars[props.id]?.position ?? [0, 2, 0],
+    type: props.withControls ? "Dynamic" : "Static",
   }));
 
-  // Only create vehicle if not server-controlled
   const [vehicleRef, vehicleApi] = useRaycastVehicle<Group>(() => ({
     chassisBody: chassisRef,
     wheels: wheelRefs,
-    wheelInfos: wheelPositions.map((pos) => ({
-      ...wheelInfo,
-      chassisConnectionPointLocal: pos,
-      isFrontWheel: pos[2] > 0,
-    })),
+    wheelInfos: createWheelConfigs(),
     indexForwardAxis: 2,
     indexRightAxis: 0,
     indexUpAxis: 1,
   }));
 
-  const maxSteer = 0.5;
-  const maxForce = 500;
-  const brakeForce = 10;
-
   const [, getKeys] = useKeyboardControls();
 
-  // Initialize car in store if this is the controlled car
   useEffect(() => {
     if (!props.withControls) return;
     carStore.trigger.init({ ref: chassisRef });
   }, [props.withControls, chassisRef]);
 
-  // Update from server position if provided
   useFrame(() => {
+    const carState = gameState.cars[props.id];
     if (carState) {
       const position = carState.position;
       chassisApi.position.set(position[0], position[1], position[2]);
@@ -102,10 +65,11 @@ export function Car(props: {
       return;
     }
 
-    const { forward, backward, left, right, brake, reset } = getKeys();
+    const controls = getKeys() as PlayerControls;
 
-    const engineForce = forward ? -maxForce : backward ? maxForce : 0;
-    const steeringValue = left ? maxSteer : right ? -maxSteer : 0;
+    const engineForce = calculateEngineForce(controls);
+    const steeringValue = calculateSteeringValue(controls);
+    const brakeValue = calculateBrakeValue(controls);
 
     vehicleApi.applyEngineForce(engineForce, 2);
     vehicleApi.applyEngineForce(engineForce, 3);
@@ -113,13 +77,12 @@ export function Car(props: {
     vehicleApi.setSteeringValue(steeringValue, 0);
     vehicleApi.setSteeringValue(steeringValue, 1);
 
-    const brakeValue = brake ? brakeForce : 0;
     vehicleApi.setBrake(brakeValue, 0);
     vehicleApi.setBrake(brakeValue, 1);
     vehicleApi.setBrake(brakeValue, 2);
     vehicleApi.setBrake(brakeValue, 3);
 
-    if (reset) {
+    if (controls.reset) {
       chassisApi.position.set(0, 2, 0);
       chassisApi.velocity.set(0, 0, 0);
       chassisApi.angularVelocity.set(0, 0, 0);
@@ -130,7 +93,7 @@ export function Car(props: {
   return (
     <group ref={vehicleRef}>
       <mesh ref={chassisRef}>
-        <boxGeometry args={[chassisWidth, chassisHeight, chassisLength]} />
+        <boxGeometry args={[CHASSIS.width, CHASSIS.height, CHASSIS.length]} />
         <meshStandardMaterial color="orange" />
       </mesh>
       <Wheel ref={wheelRefs[0]} />

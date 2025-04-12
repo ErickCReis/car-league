@@ -6,52 +6,108 @@ Car League is a 3D game inspired by Rocket League, where players control cars to
 
 The game features cars that can perform acrobatic maneuvers, boost mechanics, and physics-based ball interactions in a competitive arena setting. Our focus is on creating a simple yet engaging gameplay experience with solid technical foundations.
 
-## Core Technologies
-
-### Frontend
-- **React**: For building the user interface and game menu components
-- **Three.js**: 3D rendering library for creating the game world, cars, ball, and arena
-- **React Three Fiber**: React renderer for Three.js, making it easier to build Three.js elements with React's component approach
-- **React Three Drei**: Collection of useful helpers and abstractions for React Three Fiber
-- **Zustand/Redux**: For state management across the application
-
-
-### Backend
-- **Cloudflare Durable Objects**: For maintaining game state and handling real-time multiplayer functionality
-- **WebSockets**: For real-time bidirectional communication between clients and server
-- **Cloudflare KV**: For storing game configurations, user profiles, and other non-relational data
-- **Cloudflare D1**: SQL database for structured data like user accounts, match history, and leaderboards
-
-### Physics & Game Logic
-- **Rapier.js/Cannon.js**: Physics engine for realistic car and ball interactions
-- **Custom game logic**: For implementing game rules, scoring, and match management
-
 ## Project Structure
 
-The project will follow a modular architecture to ensure maintainability and scalability:
+The project follows a modular architecture with four main packages:
 
 ```
 car-league/
 ├── frontend/           # React + Three.js application
 │   ├── src/
 │   │   ├── components/ # UI components
-│   │   ├── game/       # Game-specific components and logic
-│   │   ├── models/     # 3D models and assets
+│   │   ├── game/       # Game-specific components and rendering
+│   │   ├── routes/     # Application routes
 │   │   └── state/      # State management
 │   └── public/         # Static assets
 │
-└── backend/            # Cloudflare Workers + Durable Objects
-    ├── src/
-    │   ├── durableObjects/ # Game session objects
-    │   ├── api/            # API endpoints
-    │   └── db/             # Database interactions
-    └── wrangler.toml       # Cloudflare configuration
+├── backend/            # Cloudflare Workers + Durable Objects
+│   └── src/
+│       ├── game/       # Server-side game logic
+│       └── ws.ts       # WebSocket handling
+│
+├── game/               # Shared game logic and physics
+│   └── src/
+│       ├── arena/      # Arena-related code
+│       ├── ball/       # Ball-related code
+│       ├── car/        # Car-related code
+│       ├── wheel/      # Wheel-related code
+│       └── world/      # Physics world code
+│
+└── common/             # Shared types and utilities
+    └── src/
+        └── common.ts   # Common types and utilities
 ```
 
-## Development Roadmap
+## Core Technologies
 
-1. **Phase 1**: Basic game mechanics and single-player mode
-2. **Phase 2**: Multiplayer functionality with real-time synchronization
-3. **Phase 3**: User accounts, matchmaking, and persistence
-4. **Phase 4**: Advanced features (tournaments, custom cars, etc.)
-5. **Phase 5**: Performance optimization and scaling
+### Frontend
+
+- **React**: For building the user interface and game menu components
+- **Three.js**: 3D rendering library for creating the game world
+- **React Three Fiber**: React renderer for Three.js
+- **React Three Drei**: Helpers and abstractions for React Three Fiber
+- **XState**: For state management
+- **TanStack Router**: For routing
+- **Tailwind CSS**: For styling
+- **shadcn/ui**: For UI components
+
+### Backend
+
+- **Cloudflare Workers**: For serverless functions
+- **Cloudflare Durable Objects**: For maintaining game state
+- **WebSockets**: For real-time communication
+- **Hono**: For API routing
+
+### Physics & Game Logic
+
+- **Cannon.js**: Physics engine for realistic car and ball interactions
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js (v18+)
+- pnpm (v10+)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/car-league.git
+cd car-league
+
+# Install dependencies
+pnpm install
+```
+
+### Development
+
+```bash
+# Start all services in development mode
+pnpm dev
+
+# Build all packages
+pnpm build
+
+# Run code checks
+pnpm check
+```
+
+## Code Organization
+
+The game package contains shared code organized by entity (car, ball, arena) rather than by function type. This approach ensures that related code stays together and makes it easier to understand the codebase.
+
+## Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. Use TypeScript for type safety
+2. Follow React Hooks best practices
+3. Use "export function name() {}" style for functions and components
+4. Make small files with a single responsibility
+5. Use Tailwind CSS for styling
+6. Use shadcn/ui for UI components when appropriate
+
+## License
+
+MIT
