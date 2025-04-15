@@ -1,54 +1,31 @@
-import type { Triple } from "./types";
+import * as CANNON from "cannon-es";
+import { ARENA, createArenaWallConfigs } from "./config/arena";
+import { toVec3 } from "./utils";
 
-export const ARENA = {
-  width: 60,
-  length: 120,
-  height: 12,
-  wallThickness: 1,
-  ground: {
-    friction: 0.5,
-    restitution: 0.5,
-  },
-  walls: {
-    friction: 0,
-    restitution: 0.8,
-  },
-} as const;
+export function createArena() {
+  const ground = new CANNON.Body({
+    type: CANNON.Body.STATIC,
+    material: new CANNON.Material(ARENA.ground.material),
+    position: toVec3(ARENA.ground.position),
+    shape: new CANNON.Plane(),
+  });
+  ground.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 
-export function createGroundConfig() {
-  return {
-    position: [0, 0, 0] as Triple,
-    rotation: [-Math.PI / 2, 0, 0] as Triple,
-    material: ARENA.ground,
-  };
-}
+  const wallConfigs = createArenaWallConfigs();
+  const walls = Object.values(wallConfigs).map((wallConfig) => {
+    return new CANNON.Body({
+      type: CANNON.Body.STATIC,
+      material: new CANNON.Material(ARENA.walls),
+      shape: new CANNON.Box(
+        toVec3([
+          wallConfig.dimensions[0] / 2,
+          wallConfig.dimensions[1] / 2,
+          wallConfig.dimensions[2] / 2,
+        ]),
+      ),
+      position: toVec3(wallConfig.position),
+    });
+  });
 
-export function createArenaWallConfigs() {
-  const { width, length, height, wallThickness } = ARENA;
-
-  return {
-    front: {
-      position: [0, height / 2, -length / 2 - wallThickness / 2],
-      dimensions: [width + wallThickness * 2, height, wallThickness],
-      material: ARENA.walls,
-    },
-    back: {
-      position: [0, height / 2, length / 2 + wallThickness / 2],
-      dimensions: [width + wallThickness * 2, height, wallThickness],
-      material: ARENA.walls,
-    },
-    left: {
-      position: [-width / 2 - wallThickness / 2, height / 2, 0],
-      dimensions: [wallThickness, height, length],
-      material: ARENA.walls,
-    },
-    right: {
-      position: [width / 2 + wallThickness / 2, height / 2, 0],
-      dimensions: [wallThickness, height, length],
-      material: ARENA.walls,
-    },
-  } satisfies Record<
-    string,
-    { position: Triple; dimensions: Triple; material: typeof ARENA.walls }
-  >;
+  return { ground, walls };
 }

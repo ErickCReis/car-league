@@ -1,10 +1,9 @@
 import type { WorldState } from "common";
-import type { PlayerControls } from "game";
-import { Game } from "./Game";
+import { Game, type PlayerControls } from "game";
 
 export class GameManager {
   private game: Game;
-  private updateInterval: Timer | null;
+  private updateInterval: number | null;
   private updateCallbacks: Map<string, (state: WorldState) => void>;
 
   constructor() {
@@ -21,7 +20,7 @@ export class GameManager {
     this.updateInterval = setInterval(() => {
       this.game.update();
 
-      const worldState = this.game.getWorldState();
+      const worldState = this.game.physicsWorld.getWorldState();
       for (const callback of this.updateCallbacks.values()) {
         callback(worldState);
       }

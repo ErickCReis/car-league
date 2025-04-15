@@ -1,30 +1,16 @@
-import { useBox, usePlane } from "@react-three/cannon";
-import { ARENA, createArenaWallConfigs, createGroundConfig } from "game";
+import { ARENA, createArenaWallConfigs } from "game";
 
-const {
-  width: arenaWidth,
-  length: arenaLength,
-  height: arenaHeight,
-  wallThickness,
-} = ARENA;
+const { width: arenaWidth, length: arenaLength } = ARENA;
 
-const groundConfig = createGroundConfig();
 const wallConfigs = createArenaWallConfigs();
 
 export function Arena() {
-  const [groundRef] = usePlane(() => groundConfig);
-  const [backWallRef] = useBox(() => wallConfigs.back);
-  const [frontWallRef] = useBox(() => wallConfigs.front);
-  const [leftWallRef] = useBox(() => wallConfigs.left);
-  const [rightWallRef] = useBox(() => wallConfigs.right);
-
   return (
     <group>
       {/* Ground */}
       <mesh
-        ref={groundRef}
-        rotation={groundConfig.rotation}
-        position={[0, 0, 0]}
+        position={ARENA.ground.position}
+        rotation={ARENA.ground.rotation}
         receiveShadow
       >
         <planeGeometry args={[arenaWidth, arenaLength]} />
@@ -33,27 +19,20 @@ export function Arena() {
 
       {/* Center line */}
       <mesh rotation={[-Math.PI / 2, 0, -Math.PI / 2]} position={[0, 0.01, 0]}>
-        <planeGeometry args={[arenaWidth * 0.01, arenaLength]} />
+        <planeGeometry args={[0.2, arenaWidth]} />
         <meshStandardMaterial color="white" />
       </mesh>
 
       {/* Center circle */}
-      <mesh rotation={groundConfig.rotation} position={[0, 0.01, 0]}>
+      <mesh rotation={ARENA.ground.rotation} position={[0, 0.01, 0]}>
         <ringGeometry args={[5, 5.2, 32]} />
         <meshStandardMaterial color="white" />
       </mesh>
 
       <group>
         {/* Back wall */}
-        <mesh
-          ref={backWallRef}
-          position={wallConfigs.back.position}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry
-            args={[arenaWidth + wallThickness * 2, arenaHeight, wallThickness]}
-          />
+        <mesh position={wallConfigs.back.position} castShadow receiveShadow>
+          <boxGeometry args={wallConfigs.back.dimensions} />
           <meshStandardMaterial
             color="#555555"
             roughness={0.5}
@@ -63,15 +42,8 @@ export function Arena() {
         </mesh>
 
         {/* Front wall */}
-        <mesh
-          ref={frontWallRef}
-          position={wallConfigs.front.position}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry
-            args={[arenaWidth + wallThickness * 2, arenaHeight, wallThickness]}
-          />
+        <mesh position={wallConfigs.front.position} castShadow receiveShadow>
+          <boxGeometry args={wallConfigs.front.dimensions} />
           <meshStandardMaterial
             color="#555555"
             roughness={0.5}
@@ -81,13 +53,8 @@ export function Arena() {
         </mesh>
 
         {/* Left wall */}
-        <mesh
-          ref={leftWallRef}
-          position={wallConfigs.left.position}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[wallThickness, arenaHeight, arenaLength]} />
+        <mesh position={wallConfigs.left.position} castShadow receiveShadow>
+          <boxGeometry args={wallConfigs.left.dimensions} />
           <meshStandardMaterial
             color="#555555"
             roughness={0.5}
@@ -97,13 +64,8 @@ export function Arena() {
         </mesh>
 
         {/* Right wall */}
-        <mesh
-          ref={rightWallRef}
-          position={wallConfigs.right.position}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[wallThickness, arenaHeight, arenaLength]} />
+        <mesh position={wallConfigs.right.position} castShadow receiveShadow>
+          <boxGeometry args={wallConfigs.right.dimensions} />
           <meshStandardMaterial
             color="#555555"
             roughness={0.5}

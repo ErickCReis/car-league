@@ -1,5 +1,4 @@
-import type { WorldState } from "common";
-import type { PlayerControls } from "game";
+import type { PlayerControls } from "./config/car";
 import { PhysicsWorld } from "./PhysicsWorld";
 
 export enum GameState {
@@ -9,40 +8,29 @@ export enum GameState {
 }
 
 export class Game {
-  private physicsWorld: PhysicsWorld;
-  private players: Map<
-    string,
-    { id: string; position: [number, number, number] }
-  >;
-  private state: GameState;
+  public state: GameState;
+  public physicsWorld: PhysicsWorld;
+  private players: Set<string>;
   private lastUpdateTime: number;
 
   constructor() {
     this.physicsWorld = new PhysicsWorld();
-    this.players = new Map();
+    this.players = new Set();
     this.state = GameState.WAITING;
     this.lastUpdateTime = Date.now();
   }
 
-  getState(): GameState {
-    return this.state;
-  }
-
-  addPlayer(playerId: string): void {
-    const position: [number, number, number] = [0, 2, 0];
-
-    this.physicsWorld.createCar(playerId, position);
-
-    this.players.set(playerId, { id: playerId, position });
+  addPlayer(playerId: string) {
+    this.physicsWorld.addCar(playerId);
+    this.players.add(playerId);
 
     if (this.players.size > 0 && this.state === GameState.WAITING) {
       this.state = GameState.PLAYING;
     }
   }
 
-  removePlayer(playerId: string): void {
+  removePlayer(playerId: string) {
     this.physicsWorld.removeCar(playerId);
-
     this.players.delete(playerId);
 
     if (this.players.size === 0 && this.state === GameState.PLAYING) {
@@ -50,13 +38,12 @@ export class Game {
     }
   }
 
-  applyPlayerControls(playerId: string, controls: PlayerControls): void {
+  applyPlayerControls(playerId: string, controls: PlayerControls) {
     if (!this.players.has(playerId)) return;
-
     this.physicsWorld.applyCarControls(playerId, controls);
   }
 
-  update(): void {
+  update() {
     const now = Date.now();
     const deltaTime = (now - this.lastUpdateTime) / 1000;
 
@@ -67,19 +54,15 @@ export class Game {
     this.lastUpdateTime = now;
   }
 
-  getWorldState(): WorldState {
-    return this.physicsWorld.getWorldState();
-  }
-
-  hasPlayer(playerId: string): boolean {
+  hasPlayer(playerId: string) {
     return this.players.has(playerId);
   }
 
-  getPlayerCount(): number {
+  getPlayerCount() {
     return this.players.size;
   }
 
-  getPlayerIds(): string[] {
+  getPlayerIds() {
     return Array.from(this.players.keys());
   }
 }

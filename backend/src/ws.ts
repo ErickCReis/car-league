@@ -4,7 +4,7 @@ import {
   type ServerToClient,
   type WorldState,
 } from "common";
-import { GameManager } from "./game/GameManager";
+import { GameManager } from "./GameManager";
 
 export class MyDurableObject extends DurableObject<Env> {
   private gameManager: GameManager;

@@ -1,25 +1,18 @@
-import { useSphere } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
-import { BALL, createBallConfig } from "game";
-import { gameState } from "@/state/game";
+import { BALL } from "game";
+import { useRef } from "react";
+import type { Mesh } from "three";
+import { GAME } from "./PhysicsWorld";
 
 export function Ball() {
-  const [ballRef, ballApi] = useSphere(() => createBallConfig());
+  const ballRef = useRef<Mesh>(null);
 
   useFrame(() => {
-    const ballState = gameState?.ball;
-    if (!ballState) return;
+    if (!ballRef.current) return;
 
-    const position = ballState.position;
-    ballApi.position.set(position[0], position[1], position[2]);
-
-    const quaternion = ballState.quaternion;
-    ballApi.quaternion.set(
-      quaternion[0],
-      quaternion[1],
-      quaternion[2],
-      quaternion[3],
-    );
+    const ballState = GAME.physicsWorld.ball;
+    ballRef.current.position.copy(ballState.position);
+    ballRef.current.quaternion.copy(ballState.quaternion);
   });
 
   return (

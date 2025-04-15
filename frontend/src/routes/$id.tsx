@@ -4,10 +4,12 @@ import type { ClientToServer, ServerToClient } from "common";
 import type { PlayerControls } from "game";
 import { WebSocket as RWS } from "partysocket";
 import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { KeyboardControlsWrapper } from "@/game/Controls";
+import { GAME } from "@/game/PhysicsWorld";
 import { Scene } from "@/game/Scene";
-import { gameState, playerId, playersStore } from "@/state/game";
+import { playerId, playersStore } from "@/state/game";
 
 export const Route = createFileRoute("/$id")({
   component: () => (
@@ -23,7 +25,7 @@ function RouteComponent() {
   const [, getKeys] = useKeyboardControls();
 
   const ws = useRef<RWS>(null);
-  const controlsInterval = useRef<Timer | null>(null);
+  const controlsInterval = useRef<number | null>(null);
 
   useEffect(() => {
     ws.current = new RWS(
@@ -34,25 +36,22 @@ function RouteComponent() {
       const msg = JSON.parse(event.data) as ServerToClient;
 
       switch (msg.type) {
+        case "playersList":
+          playersStore.trigger.init({ players: msg.players });
+          break;
+
         case "playerJoined":
-          console.log(`Player joined: ${msg.playerId}`);
+          toast(`Player joined: ${msg.playerId}`);
           playersStore.trigger.addPlayer({ player: msg.playerId });
           break;
 
         case "playerLeft":
-          console.log(`Player left: ${msg.playerId}`);
+          toast(`Player left: ${msg.playerId}`);
           playersStore.trigger.removePlayer({ player: msg.playerId });
           break;
 
-        case "playersList":
-          console.log(`Players list: ${msg.players}`);
-
-          playersStore.trigger.init({ players: msg.players });
-          break;
-
         case "physicsUpdate":
-          gameState.ball = msg.gameState.ball;
-          gameState.cars = msg.gameState.cars;
+          GAME.physicsWorld.syncWorldState(msg.gameState);
           break;
       }
     });
@@ -66,7 +65,7 @@ function RouteComponent() {
       ws.current?.send(JSON.stringify(joinMsg));
     });
 
-    controlsInterval.current = setInterval(() => {
+    controlsInterval.current = window.setInterval(() => {
       if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
       const controls = getKeys() as PlayerControls;

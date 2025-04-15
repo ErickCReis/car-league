@@ -13,7 +13,7 @@ export function FollowCamera() {
   const cameraTarget = useRef(new Vector3());
 
   useFrame((_, delta) => {
-    const target = carStore.getSnapshot().context.ref?.current;
+    const target = carStore.getSnapshot().context.ref;
 
     if (!target || !cameraRef.current) return;
 

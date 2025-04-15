@@ -1,16 +1,14 @@
 import { createStore } from "@xstate/store";
-import type { WorldState } from "common";
-import type { RefObject } from "react";
 import type { Object3D, Object3DEventMap } from "three";
 
 export const playerId = crypto.randomUUID();
 
 export const carStore = createStore({
   context: {
-    ref: null as RefObject<Object3D<Object3DEventMap>> | null,
+    ref: null as Object3D<Object3DEventMap> | null,
   },
   on: {
-    init: (context, event: { ref: RefObject<Object3D<Object3DEventMap>> }) => ({
+    init: (context, event: { ref: Object3D<Object3DEventMap> }) => ({
       ...context,
       ref: event.ref,
     }),
@@ -38,8 +36,3 @@ export const playersStore = createStore({
     }),
   },
 });
-
-export const gameState = {
-  ball: null as WorldState["ball"] | null,
-  cars: {} as WorldState["cars"],
-};

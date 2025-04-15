@@ -1,29 +1,15 @@
-export const BALL = {
-  mass: 2,
-  radius: 2,
-  material: {
-    friction: 0.5,
-    restitution: 0.7,
-  },
-  defaultPosition: [0, 5, 0] as [number, number, number],
-} as const;
+import * as CANNON from "cannon-es";
+import { BALL } from "./config/ball";
+import { toVec3 } from "./utils";
 
-export type BallConfig = {
-  mass: number;
-  radius: number;
-  position: [number, number, number];
-  material: {
-    friction: number;
-    restitution: number;
-  };
-};
-
-export function createBallConfig() {
-  return {
+export function createBall() {
+  const ball = new CANNON.Body({
     mass: BALL.mass,
-    args: [BALL.radius] as [number],
-    radius: BALL.radius,
-    position: BALL.defaultPosition,
-    material: BALL.material,
-  };
+    material: new CANNON.Material(BALL.material),
+    shape: new CANNON.Sphere(BALL.radius),
+    position: toVec3(BALL.defaultPosition),
+    allowSleep: false,
+  });
+
+  return ball;
 }
