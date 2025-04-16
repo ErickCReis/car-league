@@ -7,8 +7,8 @@ export function createArena() {
     type: CANNON.Body.STATIC,
     material: new CANNON.Material(ARENA.ground.material),
     position: toVec3(ARENA.ground.position),
-    shape: new CANNON.Plane(),
   });
+  ground.addShape(new CANNON.Plane());
   ground.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 
   const wallConfigs = createArenaWallConfigs();

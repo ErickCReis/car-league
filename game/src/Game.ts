@@ -21,6 +21,8 @@ export class Game {
   }
 
   addPlayer(playerId: string) {
+    if (this.players.has(playerId)) return;
+
     this.physicsWorld.addCar(playerId);
     this.players.add(playerId);
 
@@ -30,6 +32,8 @@ export class Game {
   }
 
   removePlayer(playerId: string) {
+    if (!this.players.has(playerId)) return;
+
     this.physicsWorld.removeCar(playerId);
     this.players.delete(playerId);
 

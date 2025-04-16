@@ -6,6 +6,10 @@ export const CHASSIS = {
   height: 1,
   length: 4,
   mass: 150,
+  material: {
+    friction: 0.1,
+    restitution: 0.5,
+  },
 } as const;
 
 export const CAR = {

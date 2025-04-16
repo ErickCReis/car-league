@@ -12,7 +12,7 @@ const wheelConfigs = CAR.wheels.map((config) => ({
 export function createCar(position: Triplet = CAR.defaultPosition) {
   const chassisBody = new CANNON.Body({
     mass: CHASSIS.mass,
-    material: new CANNON.Material(),
+    material: new CANNON.Material(CHASSIS.material),
     position: toVec3(position),
     allowSleep: false,
     shape: new CANNON.Box(
