@@ -1,6 +1,6 @@
 import * as CANNON from "cannon-es";
-import { ARENA, createArenaWallConfigs } from "./config/arena";
-import { toVec3 } from "./utils";
+import { ARENA, createArenaWallConfigs } from "../config/arena";
+import { toVec3 } from "../utils";
 
 export function createArena() {
   const ground = new CANNON.Body({

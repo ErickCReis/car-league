@@ -1,4 +1,4 @@
-import type { Triplet } from "../utils";
+import type { Triplet } from "../utils/types";
 
 export const ARENA = {
   width: 60,

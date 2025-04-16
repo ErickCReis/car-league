@@ -20,7 +20,7 @@ export class GameManager {
     this.updateInterval = setInterval(() => {
       this.game.update();
 
-      const worldState = this.game.physicsWorld.getWorldState();
+      const worldState = this.game.world.getState();
       for (const callback of this.updateCallbacks.values()) {
         callback(worldState);
       }

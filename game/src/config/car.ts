@@ -1,4 +1,4 @@
-import type { Triplet } from "../utils";
+import type { Triplet } from "../utils/types";
 import { WHEEL } from "./wheel";
 
 export const CHASSIS = {
@@ -64,15 +64,15 @@ export const CAR = {
   ],
 } as const;
 
-export const CONTROLS = {
-  forward: "forward",
-  backward: "backward",
-  left: "left",
-  right: "right",
-  brake: "brake",
-  reset: "reset",
-  jump: "jump",
-} as const;
+export enum CONTROLS {
+  forward = "forward",
+  backward = "backward",
+  left = "left",
+  right = "right",
+  brake = "brake",
+  reset = "reset",
+  jump = "jump",
+}
 
 export type PlayerControls = Record<keyof typeof CONTROLS, boolean>;
 

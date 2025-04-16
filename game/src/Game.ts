@@ -1,5 +1,5 @@
 import type { PlayerControls } from "./config/car";
-import { PhysicsWorld } from "./PhysicsWorld";
+import { World } from "./World";
 
 export enum GameState {
   WAITING = "waiting",
@@ -9,12 +9,12 @@ export enum GameState {
 
 export class Game {
   public state: GameState;
-  public physicsWorld: PhysicsWorld;
+  public world: World;
   private players: Set<string>;
   private lastUpdateTime: number;
 
   constructor() {
-    this.physicsWorld = new PhysicsWorld();
+    this.world = new World();
     this.players = new Set();
     this.state = GameState.WAITING;
     this.lastUpdateTime = Date.now();
@@ -23,7 +23,7 @@ export class Game {
   addPlayer(playerId: string) {
     if (this.players.has(playerId)) return;
 
-    this.physicsWorld.addCar(playerId);
+    this.world.addCar(playerId);
     this.players.add(playerId);
 
     if (this.players.size > 0 && this.state === GameState.WAITING) {
@@ -34,7 +34,7 @@ export class Game {
   removePlayer(playerId: string) {
     if (!this.players.has(playerId)) return;
 
-    this.physicsWorld.removeCar(playerId);
+    this.world.removeCar(playerId);
     this.players.delete(playerId);
 
     if (this.players.size === 0 && this.state === GameState.PLAYING) {
@@ -44,7 +44,7 @@ export class Game {
 
   applyPlayerControls(playerId: string, controls: PlayerControls) {
     if (!this.players.has(playerId)) return;
-    this.physicsWorld.applyCarControls(playerId, controls);
+    this.world.applyCarControls(playerId, controls);
   }
 
   update() {
@@ -52,7 +52,7 @@ export class Game {
     const deltaTime = (now - this.lastUpdateTime) / 1000;
 
     if (this.state === GameState.PLAYING) {
-      this.physicsWorld.update(deltaTime);
+      this.world.update(deltaTime);
     }
 
     this.lastUpdateTime = now;

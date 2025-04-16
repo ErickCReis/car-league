@@ -1,6 +1,6 @@
 import * as CANNON from "cannon-es";
-import { BALL } from "./config/ball";
-import { toVec3 } from "./utils";
+import { BALL } from "../config/ball";
+import { toVec3 } from "../utils";
 
 export function createBall() {
   const ball = new CANNON.Body({

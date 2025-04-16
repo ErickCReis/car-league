@@ -2,18 +2,20 @@ import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { type PerspectiveCamera as Cam, Quaternion, Vector3 } from "three";
-import { carStore } from "@/state/game";
+import { useGame } from "./GameProvider";
 
 const v = new Vector3();
 const q = new Quaternion();
 
 export function FollowCamera() {
+  const { carRef } = useGame();
+
   const cameraRef = useRef<Cam>(null);
   const cameraPosition = useRef(new Vector3(0, 5, 10));
   const cameraTarget = useRef(new Vector3());
 
   useFrame((_, delta) => {
-    const target = carStore.getSnapshot().context.ref;
+    const target = carRef.current;
 
     if (!target || !cameraRef.current) return;
 

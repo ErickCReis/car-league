@@ -1,6 +1,7 @@
 import * as CANNON from "cannon-es";
-import { CAR, CHASSIS } from "./config/car";
-import { type Triplet, toVec3 } from "./utils";
+import { CAR, CHASSIS } from "../config/car";
+import { toVec3 } from "../utils";
+import type { Triplet } from "../utils/types";
 
 const wheelConfigs = CAR.wheels.map((config) => ({
   ...config,

@@ -1,8 +1,4 @@
 import * as CANNON from "cannon-es";
-import type { WorldState } from ".";
-import { createArena } from "./arena";
-import { createBall } from "./ball";
-import { createCar } from "./car";
 import {
   calculateBrakeValue,
   calculateEngineForce,
@@ -10,9 +6,13 @@ import {
   type PlayerControls,
 } from "./config/car";
 import { WORLD } from "./config/world";
+import { createArena } from "./physics/arena";
+import { createBall } from "./physics/ball";
+import { createCar } from "./physics/car";
 import { toQuat, toVec3 } from "./utils";
+import type { WorldState } from "./utils/types";
 
-export class PhysicsWorld {
+export class World {
   private world: CANNON.World;
 
   arena: { ground: CANNON.Body; walls: CANNON.Body[] };
@@ -89,7 +89,7 @@ export class PhysicsWorld {
     }
   }
 
-  getWorldState(): WorldState {
+  getState(): WorldState {
     const carStates: WorldState["cars"] = {};
 
     // Get car states
@@ -125,7 +125,7 @@ export class PhysicsWorld {
     };
   }
 
-  syncWorldState(state: WorldState) {
+  syncState(state: WorldState) {
     this.ball.position.copy(toVec3(state.ball.position));
     this.ball.quaternion.copy(toQuat(state.ball.quaternion));
 

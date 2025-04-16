@@ -2,15 +2,16 @@ import { useFrame } from "@react-three/fiber";
 import { BALL } from "game";
 import { useRef } from "react";
 import type { Mesh } from "three";
-import { GAME } from "./PhysicsWorld";
+import { useGame } from "./GameProvider";
 
 export function Ball() {
+  const { game } = useGame();
   const ballRef = useRef<Mesh>(null);
 
   useFrame(() => {
     if (!ballRef.current) return;
 
-    const ballState = GAME.physicsWorld.ball;
+    const ballState = game.world.ball;
     ballRef.current.position.copy(ballState.position);
     ballRef.current.quaternion.copy(ballState.quaternion);
   });

@@ -1,13 +1,16 @@
-import { useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { CHASSIS, type PlayerControls } from "game";
+import { CHASSIS } from "game";
 import { useEffect, useRef } from "react";
 import type { Group } from "three";
-import { carStore } from "@/state/game";
-import { GAME } from "./PhysicsWorld";
+import { usePlayerName } from "@/state/player";
+import { useGame } from "./GameProvider";
 import { Wheel } from "./Wheel";
 
-export function Car(props: { id: string; withControls?: boolean }) {
+export function Car(props: { id: string }) {
+  const { game, carRef } = useGame();
+  const playerName = usePlayerName();
+  const withControls = props.id === playerName;
+
   const vehicleRef = useRef<Group>(null);
   const chassisRef = useRef<Group>(null);
   const wheelRefs = [
@@ -17,15 +20,13 @@ export function Car(props: { id: string; withControls?: boolean }) {
     useRef<Group>(null),
   ];
 
-  const [, getKeys] = useKeyboardControls();
-
   useEffect(() => {
-    if (!props.withControls || !chassisRef.current) return;
-    carStore.trigger.init({ ref: chassisRef.current });
-  }, [props.withControls]);
+    if (!withControls || !chassisRef.current) return;
+    carRef.current = chassisRef.current;
+  }, [withControls, carRef]);
 
   useFrame(() => {
-    const carState = GAME.physicsWorld.cars.get(props.id);
+    const carState = game.world.cars.get(props.id);
     if (!carState) return;
 
     chassisRef.current?.position.copy(carState.chassisBody.position);
@@ -36,13 +37,6 @@ export function Car(props: { id: string; withControls?: boolean }) {
       wheelRef.current?.position.copy(transform.position);
       wheelRef.current?.quaternion.copy(transform.quaternion);
     });
-
-    if (!props.withControls) {
-      return;
-    }
-
-    const controls = getKeys() as PlayerControls;
-    GAME.physicsWorld.applyCarControls(props.id, controls);
   });
 
   return (

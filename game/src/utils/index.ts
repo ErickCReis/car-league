@@ -1,8 +1,5 @@
 import * as CANNON from "cannon-es";
-
-export type Duple = [number, number];
-export type Triplet = [number, number, number];
-export type Quad = [number, number, number, number];
+import type { Quad, Triplet } from "./types";
 
 export function toVec3(vec: Triplet) {
   return new CANNON.Vec3(...vec);
