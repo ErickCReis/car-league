@@ -9,8 +9,6 @@ export const playerState = createStore({
   },
   on: {
     changePlayerName: (context, event: { name: string }) => {
-      console.log("changePlayerName", event.name);
-
       localStorage.setItem("playerName", event.name);
       return {
         ...context,
