@@ -80,6 +80,7 @@ export class MyDurableObject extends DurableObject<Env> {
       this.handlePlayerLeave(playerId);
     }
 
+    ws.close();
     this.socketPlayerMap.delete(ws);
   }
 
