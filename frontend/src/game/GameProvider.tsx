@@ -164,11 +164,11 @@ function Controls() {
   const [sub, get] = useKeyboardControls<CONTROLS>();
 
   useEffect(() => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-      return;
-    }
-
     return sub((controls) => {
+      if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
       const controlsMsg = {
         type: "controlsUpdate",
         playerId: playerName,
