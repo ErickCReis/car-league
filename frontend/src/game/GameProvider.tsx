@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import type { Object3D } from "three";
 import { usePlayerName } from "@/state/player";
+import { Scene } from "./Scene";
 
 const keyboardMap = [
   { name: CONTROLS.forward, keys: ["ArrowUp", "KeyW"] },
@@ -151,8 +152,9 @@ export function GameProvider({ roomId, children }: GameProviderProps) {
       <KeyboardControls map={keyboardMap}>
         <Canvas>
           <Controls />
-          {children}
+          <Scene />
         </Canvas>
+        {children}
       </KeyboardControls>
     </GameContext.Provider>
   );

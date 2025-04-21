@@ -5,6 +5,7 @@
   "types": "./src/index.ts",
   "module": "./src/index.ts",
   "dependencies": {
-    "cannon-es": "^0.20.0"
+    "cannon-es": "^0.20.0",
+    "common": "workspace:*"
   }
 }

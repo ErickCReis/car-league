@@ -163,6 +163,9 @@ importers:
       cannon-es:
         specifier: ^0.20.0
         version: 0.20.0
+      common:
+        specifier: workspace:*
+        version: link:../common
 
 packages:
 

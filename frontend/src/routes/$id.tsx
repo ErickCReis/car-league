@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { GameProvider } from "@/game/GameProvider";
-import { Scene } from "@/game/Scene";
+import { ScoreDisplay } from "@/game/ScoreDisplay";
 import { usePlayerName } from "@/state/player";
 
 export const Route = createFileRoute("/$id")({
@@ -26,7 +26,7 @@ function RouteComponent() {
       </div>
       <div className="flex-1 w-full">
         <GameProvider roomId={id}>
-          <Scene />
+          <ScoreDisplay />
         </GameProvider>
       </div>
     </div>

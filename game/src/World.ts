@@ -1,4 +1,7 @@
 import * as CANNON from "cannon-es";
+import type { WorldState } from "common";
+import { createArenaWallConfigs } from "./config/arena";
+import { BALL } from "./config/ball";
 import {
   calculateBrakeValue,
   calculateEngineForce,
@@ -10,10 +13,11 @@ import { createArena } from "./physics/arena";
 import { createBall } from "./physics/ball";
 import { createCar } from "./physics/car";
 import { toQuat, toVec3 } from "./utils";
-import type { WorldState } from "./utils/types";
 
 export class World {
   private world: CANNON.World;
+  private ballCollisionCallbacks: Array<(wallName: string) => void> = [];
+  private wallNameMap: Map<CANNON.Body, string> = new Map();
 
   arena: { ground: CANNON.Body; walls: CANNON.Body[] };
   ball: CANNON.Body;
@@ -32,12 +36,23 @@ export class World {
 
     this.arena = createArena();
     this.world.addBody(this.arena.ground);
+
+    // Map wall bodies to their names for collision detection
+    const wallConfigs = createArenaWallConfigs();
+    Object.entries(wallConfigs).forEach(([name], index) => {
+      const wall = this.arena.walls[index];
+      this.wallNameMap.set(wall, name);
+    });
+
     this.arena.walls.forEach((wall) => this.world.addBody(wall));
 
     this.ball = createBall();
     this.world.addBody(this.ball);
 
     this.cars = new Map();
+
+    // Set up collision detection
+    this.setupCollisionDetection();
   }
 
   update(deltaTime: number): void {
@@ -89,6 +104,34 @@ export class World {
     }
   }
 
+  resetBall() {
+    // Reset ball position and velocity
+    this.ball.position.set(0, BALL.radius * 2, 0);
+    this.ball.velocity.set(0, 0, 0);
+    this.ball.angularVelocity.set(0, 0, 0);
+    this.ball.quaternion.set(0, 0, 0, 1);
+  }
+
+  onBallCollision(callback: (wallName: string) => void) {
+    this.ballCollisionCallbacks.push(callback);
+  }
+
+  private setupCollisionDetection() {
+    // Set up collision detection for the ball
+    this.ball.addEventListener("collide", (event: { body: CANNON.Body }) => {
+      const { body } = event;
+
+      // Check if the collision is with a wall
+      if (this.arena.walls.includes(body)) {
+        const wallName = this.wallNameMap.get(body);
+        if (wallName) {
+          // Notify all callbacks about the collision
+          this.ballCollisionCallbacks.forEach((callback) => callback(wallName));
+        }
+      }
+    });
+  }
+
   getState(): WorldState {
     const carStates: WorldState["cars"] = {};
 
@@ -111,6 +154,7 @@ export class World {
 
     const ball = this.ball;
 
+    // Create the world state including score
     return {
       cars: carStates,
       ball: {
@@ -122,6 +166,7 @@ export class World {
           ball.quaternion.w,
         ],
       },
+      score: { team1: 0, team2: 0 }, // This will be overridden by the Game class
     };
   }
 

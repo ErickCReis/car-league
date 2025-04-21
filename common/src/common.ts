@@ -45,6 +45,14 @@ export interface WorldState {
       quaternion: [number, number, number, number];
     }
   >;
+  score: {
+    team1: number;
+    team2: number;
+  };
+  lastGoal?: {
+    team: 1 | 2;
+    time: number;
+  };
 }
 
 export type ServerToClient =
