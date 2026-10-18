@@ -93,6 +93,17 @@ pnpm build
 pnpm check
 ```
 
+## Deploy
+
+The root `wrangler.jsonc` runs the backend Worker and serves `frontend/dist` as static assets on the same domain. Production runs on [celld](https://github.com/denoland/celld) in Dokploy, backed by a MinIO bucket.
+
+```bash
+export CELLD_BUCKET=s3://celld S3_ENDPOINT=... AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=...
+pnpm run deploy
+```
+
+A Dokploy app builds the root `Dockerfile` on every push to `main` and runs the same deploy.
+
 ## Code Organization
 
 The game package contains shared code organized by entity (car, ball, arena) rather than by function type. This approach ensures that related code stays together and makes it easier to understand the codebase.
