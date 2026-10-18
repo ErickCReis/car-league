@@ -3,14 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "cf-typegen": "wrangler types"
+    "dev": "wrangler dev --config ../wrangler.jsonc"
   },
   "devDependencies": {
-    "typescript": "^5.5.2",
-    "wrangler": "^4.10.0"
+    "typescript": "^5.5.2"
   },
   "dependencies": {
     "cannon-es": "^0.20.0",
